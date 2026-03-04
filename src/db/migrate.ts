@@ -9,11 +9,21 @@ const migrate = async () => {
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id       SERIAL PRIMARY KEY,
-        username VARCHAR(100) NOT NULL,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL DEFAULT '',
         balance  NUMERIC(12, 2) NOT NULL DEFAULT 0.00
       );
     `);
     console.log("✅ Table 'users' ready");
+
+    // Add password column if it doesn't exist (for existing tables)
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255) NOT NULL DEFAULT '';
+    `);
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(100) DEFAULT '';
+    `);
+    console.log("✅ Password column ready");
 
     // Only seed if the table is empty
     const { rows } = await client.query("SELECT COUNT(*) FROM users");
@@ -32,7 +42,7 @@ const migrate = async () => {
     }
 
     // Show current state
-    const users = await client.query("SELECT * FROM users ORDER BY id");
+    const users = await client.query("SELECT id, username, balance FROM users ORDER BY id");
     console.log("\n📋 Current users:");
     console.table(users.rows);
 

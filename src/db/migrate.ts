@@ -14,6 +14,17 @@ const migrate = async () => {
         balance  NUMERIC(12, 2) NOT NULL DEFAULT 0.00
       );
     `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS refresh_tokens (
+        id         SERIAL PRIMARY KEY,
+        user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token      TEXT NOT NULL UNIQUE,
+        expires_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+    console.log("✅ Table 'refresh_tokens' ready");
     console.log("✅ Table 'users' ready");
 
     // Add password column if it doesn't exist (for existing tables)

@@ -12,5 +12,7 @@ const getEnvVar = (key: string) : string => {
 
 export const ENV = {
     JWT_SECRET: getEnvVar("JWT_SECRET"),
-    JWT_EXPIRES_IN: getEnvVar("JWT_EXPIRES_IN")
+    JWT_EXPIRES_IN: getEnvVar("JWT_EXPIRES_IN"),
+    REFRESH_TOKEN_SECRET: getEnvVar("REFRESH_TOKEN_SECRET"),
+    REFRESH_TOKEN_EXPIRES_IN: getEnvVar("REFRESH_TOKEN_EXPIRES_IN"),
 }

@@ -6,6 +6,10 @@ export interface AuthRequest extends Request {
     user?: {
         id: number, 
         username: string
+    };
+    event?: {
+        id: number,
+        user_id: number,
     }
 }
 

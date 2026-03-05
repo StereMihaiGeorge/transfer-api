@@ -2,25 +2,36 @@ import { z } from "zod";
 
 export const registerSchema = z.object({
   username: z
-    .string()
+    .string({ error: "Username is required" })
     .min(3, "Username must be at least 3 characters")
-    .max(50, "Username must be at most 50 characters"),
-  email: z.string().email("Invalid email address"),
+    .max(50, "Username must be less than 50 characters"),
+  email: z
+    .string({ error: "Email is required" })
+    .check(z.email("Invalid email format")),
   password: z
-    .string()
+    .string({ error: "Password is required" })
     .min(8, "Password must be at least 8 characters")
-    .max(100, "Password must be at most 100 characters"),
+    .check(z.regex(/[A-Z]/, "Password must contain at least one uppercase letter"))
+    .check(z.regex(/\d/, "Password must contain at least one number")),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z
+    .string({ error: "Email is required" })
+    .check(z.email("Invalid email format")),
+  password: z
+    .string({ error: "Password is required" })
+    .min(1, "Password is required"),
 });
 
 export const refreshSchema = z.object({
-  refreshToken: z.string().min(1, "Refresh token is required"),
+  refreshToken: z
+    .string({ error: "Refresh token is required" })
+    .min(1, "Refresh token is required"),
 });
 
 export const logoutSchema = z.object({
-  refreshToken: z.string().min(1, "Refresh token is required"),
+  refreshToken: z
+    .string({ error: "Refresh token is required" })
+    .min(1, "Refresh token is required"),
 });

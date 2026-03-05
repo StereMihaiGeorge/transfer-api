@@ -52,24 +52,32 @@ const migrate = async () => {
       );
     `);
     console.log("✅ Table 'tables' ready");
+    
 
     // Guests table
     await client.query(`
-      CREATE TABLE IF NOT EXISTS guests (
-        id               SERIAL PRIMARY KEY,
-        event_id         INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-        table_id         INTEGER REFERENCES tables(id) ON DELETE SET NULL,
-        name             VARCHAR(100) NOT NULL,
-        email            VARCHAR(100),
-        phone            VARCHAR(20),
-        status           VARCHAR(20) NOT NULL DEFAULT 'pending',
-        meal_preference  VARCHAR(100),
-        token            UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
-        token_expires_at TIMESTAMP,
-        responded_at     TIMESTAMP,
-        created_at       TIMESTAMP DEFAULT NOW()
-      );
-    `);
+  CREATE TABLE IF NOT EXISTS guests (
+    id               SERIAL PRIMARY KEY,
+    event_id         INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    table_id         INTEGER REFERENCES tables(id) ON DELETE SET NULL,
+    name             VARCHAR(100) NOT NULL,
+    email            VARCHAR(100),
+    phone            VARCHAR(20),
+    side             VARCHAR(10) NOT NULL DEFAULT 'both',
+    status           VARCHAR(20) NOT NULL DEFAULT 'pending',
+    meal_preference  VARCHAR(100),
+    invitation_sent  BOOLEAN NOT NULL DEFAULT FALSE,
+    token            UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+    token_expires_at TIMESTAMP,
+    responded_at     TIMESTAMP,
+    created_at       TIMESTAMP DEFAULT NOW()
+  );
+`);
+    
+    await client.query(`
+  ALTER TABLE guests ADD COLUMN IF NOT EXISTS side VARCHAR(10) NOT NULL DEFAULT 'both';
+  ALTER TABLE guests ADD COLUMN IF NOT EXISTS invitation_sent BOOLEAN NOT NULL DEFAULT FALSE;
+`);
     console.log("✅ Table 'guests' ready");
 
     // Song requests table
@@ -111,7 +119,6 @@ const migrate = async () => {
     console.log("✅ Table 'refresh_tokens' ready");
 
     console.log("\n✅ All migrations completed successfully!");
-
   } catch (error) {
     console.error("❌ Migration failed:", error);
   } finally {

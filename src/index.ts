@@ -4,6 +4,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/auth";
 import eventRoutes from "./routes/events";
+import guestRoutes from "./routes/guests";
 import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./middleware/logger";
 import "./config/db"; // trigger connection test on startup
@@ -50,6 +51,7 @@ app.get("/health", (_, res) => {
 
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/events/:id/guests", guestRoutes);
 
 
 app.use(errorHandler);

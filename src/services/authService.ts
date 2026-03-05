@@ -1,4 +1,4 @@
-import brycpt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/db';
 import { ENV } from '../config/env';
@@ -8,69 +8,67 @@ const SALT_ROUNDS = 10;
 
 export const registerUser = async (
     username: string,
-    password: string,
-    balance: number = 0
+    email: string,
+    password: string
 ): Promise<UserPublic> => {
-    // check if username exists
-    const existing = await pool.query(
+    const existingUsername = await pool.query(
         "SELECT id FROM users WHERE username = $1",
         [username]
     );
-
-    if (existing.rows.length > 0) {
-        throw new Error("Username already exists");
+    if (existingUsername.rows.length > 0) {
+        throw new Error("Username already taken");
     }
 
-    // Hash the password
+    const existingEmail = await pool.query(
+        "SELECT id FROM users WHERE email = $1",
+        [email]
+    );
+    if (existingEmail.rows.length > 0) {
+        throw new Error("Email already registered");
+    }
 
-    const hashedPassword = await brycpt.hash(password, SALT_ROUNDS);
-
-    // save user in db
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     const result = await pool.query<UserPublic>(
-        `INSERT INTO users (username, password, balance)
-        VALUES ($1, $2, $3)
-        RETURNING id, username, balance`,
-        [username, hashedPassword, balance]
-    )
+        `INSERT INTO users (username, email, password)
+         VALUES ($1, $2, $3)
+         RETURNING id, username, email, plan`,
+        [username, email, hashedPassword]
+    );
 
     return result.rows[0];
 };
 
 export const loginUser = async (
-    username: string,
+    email: string,
     password: string
 ): Promise<{ accessToken: string; refreshToken: string }> => {
-
-    //find user by username
     const result = await pool.query(
-        "SELECT * FROM users WHERE username = $1",
-        [username]
+        "SELECT * FROM users WHERE email = $1",
+        [email]
     );
 
     if (result.rows.length === 0) {
-        throw new Error("Invalid username or password");
-    };
+        throw new Error("Invalid email or password");
+    }
 
     const user = result.rows[0];
 
-    // compare password with hashed password
-    const isValid = await brycpt.compare(password, user.password);
-
+    const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-        throw new Error("Invalid username or password");
+        throw new Error("Invalid email or password");
     }
 
     const accessToken = jwt.sign(
         { id: user.id, username: user.username },
         ENV.JWT_SECRET,
-        { expiresIn: ENV.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
+        { expiresIn: ENV.JWT_ACCESS_EXPIRES as jwt.SignOptions['expiresIn'] }
     );
 
     const refreshToken = jwt.sign(
         { id: user.id, username: user.username },
-        ENV.REFRESH_TOKEN_SECRET,
-        { expiresIn: ENV.REFRESH_TOKEN_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
+        ENV.JWT_REFRESH_SECRET,
+        { expiresIn: ENV.JWT_REFRESH_EXPIRES as jwt.SignOptions['expiresIn'] }
     );
 
     const decoded = jwt.decode(refreshToken) as { exp: number };
@@ -90,7 +88,7 @@ export const refreshAccessToken = async (
     let payload: { id: number; username: string };
 
     try {
-        payload = jwt.verify(refreshToken, ENV.REFRESH_TOKEN_SECRET) as { id: number; username: string };
+        payload = jwt.verify(refreshToken, ENV.JWT_REFRESH_SECRET) as { id: number; username: string };
     } catch {
         throw new Error("Invalid or expired refresh token");
     }
@@ -107,7 +105,7 @@ export const refreshAccessToken = async (
     return jwt.sign(
         { id: payload.id, username: payload.username },
         ENV.JWT_SECRET,
-        { expiresIn: ENV.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
+        { expiresIn: ENV.JWT_ACCESS_EXPIRES as jwt.SignOptions['expiresIn'] }
     );
 };
 

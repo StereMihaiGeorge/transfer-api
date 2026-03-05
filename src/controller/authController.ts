@@ -2,27 +2,25 @@ import { Request, Response } from "express";
 import { registerUser, loginUser, refreshAccessToken, logoutUser } from "../services/authService";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { username, password, balance } = req.body;
+  const { username, email, password } = req.body;
 
   try {
-    const user = await registerUser(username, password, balance);
+    const user = await registerUser(username, email, password);
     res.status(201).json({ message: "User registered successfully", user });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unexpected error occured";
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(400).json({ error: message });
   }
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const { accessToken, refreshToken } = await loginUser(username, password);
+    const { accessToken, refreshToken } = await loginUser(email, password);
     res.status(200).json({ message: "Login successful", accessToken, refreshToken });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unexpected error occured";
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(400).json({ error: message });
   }
 };
@@ -39,8 +37,7 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
     const accessToken = await refreshAccessToken(refreshToken);
     res.status(200).json({ accessToken });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unexpected error occured";
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(401).json({ error: message });
   }
 };
@@ -57,8 +54,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     await logoutUser(refreshToken);
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unexpected error occured";
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(500).json({ error: message });
   }
 };

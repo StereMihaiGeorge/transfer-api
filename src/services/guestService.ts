@@ -99,3 +99,19 @@ export const assignGuestToTable = async (
 
   return result.rows[0];
 };
+
+export const markAsInvited = async (guestId: number): Promise<Guest> => {
+  const result = await pool.query<Guest>(
+    `UPDATE guests 
+     SET invitation_sent = true 
+     WHERE id = $1 
+     RETURNING *`,
+    [guestId]
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error("Guest not found");
+  }
+
+  return result.rows[0];
+};

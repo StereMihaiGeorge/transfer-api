@@ -6,6 +6,7 @@ import {
   updateGuest,
   deleteGuest,
   assignGuestToTable,
+  markAsInvited
 } from "../services/guestService";
 
 export const create = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -56,6 +57,16 @@ export const assignTable = async (req: AuthRequest, res: Response): Promise<void
       Number.parseInt(req.params.id as string)
     );
     res.status(200).json({ message: "Guest assigned to table successfully", guest });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
+    res.status(400).json({ error: message });
+  }
+};
+
+export const markInvited = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const guest = await markAsInvited(Number.parseInt(req.params.gid as string));
+    res.status(200).json({ message: "Guest marked as invited", guest });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(400).json({ error: message });

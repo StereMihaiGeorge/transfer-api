@@ -12,6 +12,9 @@ export interface Guest {
   status: GuestStatus;
   meal_preference: string | null;
   invitation_sent: boolean;
+  special_needs: string | null;
+  sit_with: string | null;
+  not_sit_with: string | null;
   token: string;
   token_expires_at: Date | null;
   responded_at: Date | null;

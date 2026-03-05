@@ -74,6 +74,13 @@ const migrate = async () => {
   );
 `);
     
+   await client.query(`
+  ALTER TABLE guests ADD COLUMN IF NOT EXISTS special_needs TEXT;
+  ALTER TABLE guests ADD COLUMN IF NOT EXISTS sit_with VARCHAR(255);
+  ALTER TABLE guests ADD COLUMN IF NOT EXISTS not_sit_with VARCHAR(255);
+`);
+console.log("✅ Guest preference columns ready");   
+    
     await client.query(`
   ALTER TABLE guests ADD COLUMN IF NOT EXISTS side VARCHAR(10) NOT NULL DEFAULT 'both';
   ALTER TABLE guests ADD COLUMN IF NOT EXISTS invitation_sent BOOLEAN NOT NULL DEFAULT FALSE;

@@ -2,12 +2,14 @@ import { Response } from "express";
 import { AuthRequest } from "../middleware/authenticate";
 import {
   createGuest,
+  getGuestById,
   getGuestsByEventId,
   updateGuest,
   deleteGuest,
   assignGuestToTable,
   markAsInvited
 } from "../services/guestService";
+import { sendInvitationEmail } from "../emails/emailService";
 
 export const create = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -67,6 +69,26 @@ export const markInvited = async (req: AuthRequest, res: Response): Promise<void
   try {
     const guest = await markAsInvited(Number.parseInt(req.params.gid as string));
     res.status(200).json({ message: "Guest marked as invited", guest });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
+    res.status(400).json({ error: message });
+  }
+};
+
+export const sendInvitation = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const guestId = Number.parseInt(req.params.gid as string);
+    const eventId = Number.parseInt(req.params.id as string);
+
+    const guest = await getGuestById(guestId);
+    if (!guest) {
+      res.status(404).json({ error: "Guest not found" });
+      return;
+    }
+
+    sendInvitationEmail(guestId, eventId, guest.token).catch(console.error);
+
+    res.status(200).json({ message: "Invitation sending in background" });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(400).json({ error: message });

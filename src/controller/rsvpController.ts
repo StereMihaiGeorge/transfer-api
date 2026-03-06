@@ -4,6 +4,7 @@ import {
   respondToRSVP,
   submitPreferences,
 } from "../services/rspvService";
+import { sendPreferencesEmail } from "../emails/emailService";
 
 export const getInvitation = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -41,6 +42,11 @@ export const preferences = async (req: Request, res: Response): Promise<void> =>
   try {
     const token = String(req.params.token);
     const guest = await submitPreferences(token, req.body);
+
+    if (guest.email) {
+      sendPreferencesEmail(guest.id, guest.event_id, token).catch(console.error);
+    }
+
     res.status(200).json({
       message: "Preferences saved successfully",
       guest,

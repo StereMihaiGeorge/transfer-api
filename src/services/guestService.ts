@@ -14,6 +14,11 @@ export const createGuest = async (
   return result.rows[0];
 };
 
+export const getGuestById = async (guestId: number): Promise<Guest | null> => {
+  const result = await pool.query<Guest>('SELECT * FROM guests WHERE id = $1', [guestId]);
+  return result.rows[0] || null;
+};
+
 export const getGuestsByEventId = async (eventId: number): Promise<Guest[]> => {
   const result = await pool.query<Guest>(
     `SELECT g.*, t.name as table_name

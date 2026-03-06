@@ -1,5 +1,6 @@
 import { pool } from "../config/db";
 import { Guest } from "../models/guests";
+import { sendRsvpConfirmationEmail, sendRsvpNotificationEmail } from "../emails/emailService";
 
 export interface RSVPResponse {
   guest: {
@@ -95,7 +96,12 @@ export const respondToRSVP = async (
   }
 
   const result = await pool.query<Guest>(query, params);
-  return result.rows[0];
+  const updatedGuest = result.rows[0];
+
+  sendRsvpConfirmationEmail(updatedGuest.id, updatedGuest.event_id).catch(console.error);
+  sendRsvpNotificationEmail(updatedGuest.id, updatedGuest.event_id).catch(console.error);
+
+  return updatedGuest;
 };
 
 export const submitPreferences = async (

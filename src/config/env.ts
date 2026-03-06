@@ -10,6 +10,8 @@ const getEnvVar = (key: string): string => {
     return value;
 };
 
+const getOptionalEnvVar = (key: string): string => process.env[key] || '';
+
 export const ENV = {
   // Database
   DB_HOST: getEnvVar("DB_HOST"),
@@ -26,4 +28,11 @@ export const ENV = {
 
   // Frontend
   FRONTEND_URL: getEnvVar("FRONTEND_URL"),
+
+  // SMTP (optional — dev uses Ethereal)
+  SMTP_HOST: getOptionalEnvVar("SMTP_HOST"),
+  SMTP_PORT: getOptionalEnvVar("SMTP_PORT"),
+  SMTP_USER: getOptionalEnvVar("SMTP_USER"),
+  SMTP_PASS: getOptionalEnvVar("SMTP_PASS"),
+  SMTP_FROM: getOptionalEnvVar("SMTP_FROM"),
 };

@@ -105,22 +105,15 @@ export const getSongRequestsByEventId = async (eventId: number): Promise<SongReq
   return result.rows;
 };
 
-export const exportSongsAsCSV = async (eventId: number): Promise<string> => {
-  const [specialSongs, guestRequests, genreSummary] = await Promise.all([
-    pool.query<EventSong>(
-      `SELECT * FROM event_songs WHERE event_id = $1 ORDER BY created_at ASC`,
-      [eventId]
-    ),
-    pool.query<SongRequest>(
-      `SELECT * FROM song_requests WHERE event_id = $1 ORDER BY genre ASC, song_title ASC`,
-      [eventId]
-    ),
-    pool.query<{ genre: string; count: string }>(
-      `SELECT genre, COUNT(*) as count FROM song_requests WHERE event_id = $1 GROUP BY genre ORDER BY COUNT(*) DESC`,
-      [eventId]
-    ),
-  ]);
+type SpecialMoment = { moment: string; song_title: string; artist?: string | null; notes?: string | null };
+type GuestRequest = { song_title: string; artist?: string | null; genre: string };
+type GenreCount = { genre: string; count: string | number };
 
+export const buildCSV = (
+  specialMoments: SpecialMoment[],
+  guestRequests: GuestRequest[],
+  genreSummary: GenreCount[]
+): string => {
   const escape = (val: string | null | undefined) => {
     if (!val) return "";
     return val.includes(",") || val.includes('"') || val.includes("\n")
@@ -128,15 +121,15 @@ export const exportSongsAsCSV = async (eventId: number): Promise<string> => {
       : val;
   };
 
-  const specialRows = specialSongs.rows
+  const specialRows = specialMoments
     .map((s) => `${escape(s.moment)},${escape(s.song_title)},${escape(s.artist)},${escape(s.notes)}`)
     .join("\n");
 
-  const requestRows = guestRequests.rows
+  const requestRows = guestRequests
     .map((r) => `${escape(r.song_title)},${escape(r.artist)},${escape(r.genre)}`)
     .join("\n");
 
-  const summaryRows = genreSummary.rows
+  const summaryRows = genreSummary
     .map((g) => `${escape(g.genre)},${g.count}`)
     .join("\n");
 
@@ -153,4 +146,23 @@ export const exportSongsAsCSV = async (eventId: number): Promise<string> => {
     "Genre,Count",
     summaryRows,
   ].join("\n");
+};
+
+export const exportSongsAsCSV = async (eventId: number): Promise<string> => {
+  const [specialSongs, guestRequests, genreSummary] = await Promise.all([
+    pool.query<EventSong>(
+      `SELECT * FROM event_songs WHERE event_id = $1 ORDER BY created_at ASC`,
+      [eventId]
+    ),
+    pool.query<SongRequest>(
+      `SELECT * FROM song_requests WHERE event_id = $1 ORDER BY genre ASC, song_title ASC`,
+      [eventId]
+    ),
+    pool.query<{ genre: string; count: string }>(
+      `SELECT genre, COUNT(*) as count FROM song_requests WHERE event_id = $1 GROUP BY genre ORDER BY COUNT(*) DESC`,
+      [eventId]
+    ),
+  ]);
+
+  return buildCSV(specialSongs.rows, guestRequests.rows, genreSummary.rows);
 };

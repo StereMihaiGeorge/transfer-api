@@ -3,7 +3,7 @@ import { Event, CreateEventInput } from "../models/event";
 import { seedDefaultTodos } from "./todoService";
 
 // Generate a URL-friendly slug from bride and groom names
-const generateSlug = (brideName: string, groomName: string, date: string): string => {
+export const generateSlug = (brideName: string, groomName: string, date: string): string => {
   const year = new Date(date).getFullYear();
   const slug = `${brideName}-si-${groomName}-${year}`
     .toLowerCase()

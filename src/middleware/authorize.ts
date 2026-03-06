@@ -15,10 +15,7 @@ export const authorizeEvent = async (
       return;
     }
 
-    const result = await pool.query(
-      "SELECT id, user_id FROM events WHERE id = $1",
-      [eventId]
-    );
+    const result = await pool.query("SELECT id, user_id FROM events WHERE id = $1", [eventId]);
 
     if (result.rows.length === 0) {
       res.status(404).json({ error: "Event not found" });
@@ -55,10 +52,10 @@ export const authorizeGuest = async (
       return;
     }
 
-    const result = await pool.query(
-      "SELECT id FROM guests WHERE id = $1 AND event_id = $2",
-      [guestId, eventId]
-    );
+    const result = await pool.query("SELECT id FROM guests WHERE id = $1 AND event_id = $2", [
+      guestId,
+      eventId,
+    ]);
 
     if (result.rows.length === 0) {
       res.status(404).json({ error: "Guest not found" });

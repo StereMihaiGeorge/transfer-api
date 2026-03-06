@@ -1,8 +1,15 @@
 import { z } from "zod";
 
 const songGenres = [
-  'pop', 'rock', 'manele', 'house',
-  'jazz', 'classical', 'folk', 'populara', 'other',
+  "pop",
+  "rock",
+  "manele",
+  "house",
+  "jazz",
+  "classical",
+  "folk",
+  "populara",
+  "other",
 ] as const;
 
 export const createEventSongSchema = z.object({

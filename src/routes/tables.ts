@@ -1,11 +1,5 @@
 import { Router } from "express";
-import {
-  create,
-  getAll,
-  getOne,
-  update,
-  remove,
-} from "../controller/tableController";
+import { create, getAll, getOne, update, remove } from "../controller/tableController";
 import { authenticate } from "../middleware/authenticate";
 import { authorizeEvent } from "../middleware/authorize";
 import { validate } from "../middleware/validate";

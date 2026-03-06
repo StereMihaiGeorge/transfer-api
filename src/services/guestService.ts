@@ -1,21 +1,25 @@
 import { pool } from "../config/db";
 import { Guest, CreateGuestInput } from "../models/guests";
 
-export const createGuest = async (
-  eventId: number,
-  input: CreateGuestInput
-): Promise<Guest> => {
+export const createGuest = async (eventId: number, input: CreateGuestInput): Promise<Guest> => {
   const result = await pool.query<Guest>(
     `INSERT INTO guests (event_id, name, email, phone, side, member_count)
      VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [eventId, input.name, input.email || null, input.phone || null, input.side, input.member_count ?? 1]
+    [
+      eventId,
+      input.name,
+      input.email || null,
+      input.phone || null,
+      input.side,
+      input.member_count ?? 1,
+    ]
   );
   return result.rows[0];
 };
 
 export const getGuestById = async (guestId: number): Promise<Guest | null> => {
-  const result = await pool.query<Guest>('SELECT * FROM guests WHERE id = $1', [guestId]);
+  const result = await pool.query<Guest>("SELECT * FROM guests WHERE id = $1", [guestId]);
   return result.rows[0] || null;
 };
 
@@ -53,9 +57,7 @@ export const updateGuest = async (
     throw new Error("No fields to update");
   }
 
-  const setClause = fields
-    .map((field, index) => `${field} = $${index + 1}`)
-    .join(", ");
+  const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
 
   const result = await pool.query<Guest>(
     `UPDATE guests SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`,
@@ -85,10 +87,7 @@ export const assignGuestToTable = async (
   }
 
   // Get the guest's member_count
-  const guestResult = await pool.query(
-    "SELECT member_count FROM guests WHERE id = $1",
-    [guestId]
-  );
+  const guestResult = await pool.query("SELECT member_count FROM guests WHERE id = $1", [guestId]);
   const memberCount = Number.parseInt(guestResult.rows[0]?.member_count ?? 1);
 
   // Check table capacity using sum of member_count
@@ -102,7 +101,9 @@ export const assignGuestToTable = async (
   const available = capacity - occupied;
 
   if (memberCount > available) {
-    throw new Error(`Not enough spots at this table. Available: ${available}, Required: ${memberCount}`);
+    throw new Error(
+      `Not enough spots at this table. Available: ${available}, Required: ${memberCount}`
+    );
   }
 
   const result = await pool.query<Guest>(

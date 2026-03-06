@@ -10,12 +10,7 @@ export class AppError extends Error {
   }
 }
 
-export const errorHandler = (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction): void => {
   console.error(`❌ Error: ${err.message}`);
 
   // Known operational error (we threw it intentionally)
@@ -26,6 +21,6 @@ export const errorHandler = (
 
   // Unexpected error (bug, DB crash etc)
   res.status(500).json({
-    error: "Internal server error"
+    error: "Internal server error",
   });
 };

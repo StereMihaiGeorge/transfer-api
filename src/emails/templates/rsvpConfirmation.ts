@@ -4,26 +4,29 @@ export interface RsvpConfirmationTemplateData {
   groomName: string;
   date: string;
   venue: string;
-  status: 'confirmed' | 'declined';
+  status: "confirmed" | "declined";
   memberCount: number;
 }
 
-export function rsvpConfirmationTemplate(data: RsvpConfirmationTemplateData): { subject: string; html: string } {
-  const isConfirmed = data.status === 'confirmed';
+export function rsvpConfirmationTemplate(data: RsvpConfirmationTemplateData): {
+  subject: string;
+  html: string;
+} {
+  const isConfirmed = data.status === "confirmed";
 
   const subject = isConfirmed
     ? `See you there! — ${data.brideName} & ${data.groomName}'s Wedding`
     : `We'll miss you — ${data.brideName} & ${data.groomName}'s Wedding`;
 
-  const headerBg = isConfirmed ? '#2c2c2c' : '#6b6b6b';
-  const accentColor = isConfirmed ? '#c9a96e' : '#aaa';
+  const headerBg = isConfirmed ? "#2c2c2c" : "#6b6b6b";
+  const accentColor = isConfirmed ? "#c9a96e" : "#aaa";
 
   const bodyContent = isConfirmed
     ? `<p style="margin:0 0 16px;color:#555;font-size:15px;line-height:1.7;">
         Thank you for confirming! We are thrilled that you will be joining us to celebrate this special day.
        </p>
        <p style="margin:0 0 16px;color:#555;font-size:15px;line-height:1.7;">
-        We have noted <strong>${data.memberCount} ${data.memberCount === 1 ? 'guest' : 'guests'}</strong> attending from your party.
+        We have noted <strong>${data.memberCount} ${data.memberCount === 1 ? "guest" : "guests"}</strong> attending from your party.
        </p>
        <p style="margin:0;color:#555;font-size:15px;line-height:1.7;">
         We cannot wait to celebrate with you!
@@ -51,7 +54,7 @@ export function rsvpConfirmationTemplate(data: RsvpConfirmationTemplateData): { 
           <!-- Header -->
           <tr>
             <td style="background-color:${headerBg};padding:48px 40px;text-align:center;">
-              <p style="margin:0 0 8px;color:${accentColor};font-size:13px;letter-spacing:3px;text-transform:uppercase;">${isConfirmed ? 'RSVP Confirmed' : 'RSVP Received'}</p>
+              <p style="margin:0 0 8px;color:${accentColor};font-size:13px;letter-spacing:3px;text-transform:uppercase;">${isConfirmed ? "RSVP Confirmed" : "RSVP Received"}</p>
               <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:400;letter-spacing:2px;">${data.brideName} &amp; ${data.groomName}</h1>
             </td>
           </tr>
@@ -62,7 +65,9 @@ export function rsvpConfirmationTemplate(data: RsvpConfirmationTemplateData): { 
               <p style="margin:0 0 24px;color:#555;font-size:15px;">Dear <strong style="color:#2c2c2c;">${data.guestName}</strong>,</p>
               ${bodyContent}
 
-              ${isConfirmed ? `
+              ${
+                isConfirmed
+                  ? `
               <!-- Event details reminder -->
               <table role="presentation" width="100%" style="margin:32px 0;border-top:1px solid #e8e0d5;border-bottom:1px solid #e8e0d5;padding:24px 0;">
                 <tr>
@@ -77,7 +82,9 @@ export function rsvpConfirmationTemplate(data: RsvpConfirmationTemplateData): { 
                     <p style="margin:0;color:#2c2c2c;font-size:17px;">${data.venue}</p>
                   </td>
                 </tr>
-              </table>` : ''}
+              </table>`
+                  : ""
+              }
             </td>
           </tr>
 

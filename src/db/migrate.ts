@@ -133,7 +133,7 @@ const migrate = async () => {
 `);
 
     // Add column if table already exists
-   await client.query(`
+    await client.query(`
   ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS error_message TEXT;
   ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
 `);

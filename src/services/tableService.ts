@@ -1,10 +1,7 @@
 import { pool } from "../config/db";
 import { Table, CreateTableInput } from "../models/table";
 
-export const createTable = async (
-  eventId: number,
-  input: CreateTableInput
-): Promise<Table> => {
+export const createTable = async (eventId: number, input: CreateTableInput): Promise<Table> => {
   const result = await pool.query<Table>(
     `INSERT INTO tables (event_id, name, capacity)
      VALUES ($1, $2, $3)
@@ -29,14 +26,11 @@ export const getTablesByEventId = async (eventId: number): Promise<Table[]> => {
   return result.rows;
 };
 
-export const getTableById = async (
-  tableId: number,
-  eventId: number
-): Promise<Table | null> => {
-  const result = await pool.query<Table>(
-    "SELECT * FROM tables WHERE id = $1 AND event_id = $2",
-    [tableId, eventId]
-  );
+export const getTableById = async (tableId: number, eventId: number): Promise<Table | null> => {
+  const result = await pool.query<Table>("SELECT * FROM tables WHERE id = $1 AND event_id = $2", [
+    tableId,
+    eventId,
+  ]);
   return result.rows[0] || null;
 };
 
@@ -51,9 +45,7 @@ export const updateTable = async (
     throw new Error("No fields to update");
   }
 
-  const setClause = fields
-    .map((field, index) => `${field} = $${index + 1}`)
-    .join(", ");
+  const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
 
   const result = await pool.query<Table>(
     `UPDATE tables SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`,
@@ -65,10 +57,7 @@ export const updateTable = async (
 
 export const deleteTable = async (tableId: number): Promise<void> => {
   // Check if table has guests assigned
-  const guests = await pool.query(
-    "SELECT COUNT(*) FROM guests WHERE table_id = $1",
-    [tableId]
-  );
+  const guests = await pool.query("SELECT COUNT(*) FROM guests WHERE table_id = $1", [tableId]);
 
   const count = Number.parseInt(guests.rows[0].count);
   if (count > 0) {

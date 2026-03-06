@@ -1,9 +1,5 @@
 import { Request, Response } from "express";
-import {
-  getGuestByToken,
-  respondToRSVP,
-  submitPreferences,
-} from "../services/rspvService";
+import { getGuestByToken, respondToRSVP, submitPreferences } from "../services/rspvService";
 import { createSongRequestByToken } from "../services/songService";
 import { sendPreferencesEmail } from "../emails/emailService";
 
@@ -20,7 +16,7 @@ export const getInvitation = async (req: Request, res: Response): Promise<void> 
 
 export const respond = async (req: Request, res: Response): Promise<void> => {
   try {
-    const token = String(req.params.token); 
+    const token = String(req.params.token);
     const { status, member_count } = req.body;
 
     console.log("RSVP body:", req.body);
@@ -28,9 +24,10 @@ export const respond = async (req: Request, res: Response): Promise<void> => {
     const guest = await respondToRSVP(token, status, member_count);
 
     res.status(200).json({
-      message: status === "confirmed"
-        ? "Attendance confirmed successfully"
-        : "Response recorded successfully",
+      message:
+        status === "confirmed"
+          ? "Attendance confirmed successfully"
+          : "Response recorded successfully",
       guest,
     });
   } catch (error) {

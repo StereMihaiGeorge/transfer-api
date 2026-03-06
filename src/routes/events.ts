@@ -207,5 +207,4 @@ router.put("/:id", authenticate, authorizeEvent, validate(updateEventSchema), up
  */
 router.delete("/:id", authenticate, authorizeEvent, remove);
 
-
 export default router;

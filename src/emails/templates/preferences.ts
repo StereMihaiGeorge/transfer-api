@@ -5,7 +5,10 @@ export interface PreferencesTemplateData {
   preferencesUrl: string;
 }
 
-export function preferencesTemplate(data: PreferencesTemplateData): { subject: string; html: string } {
+export function preferencesTemplate(data: PreferencesTemplateData): {
+  subject: string;
+  html: string;
+} {
   const subject = `Help us personalise your experience — ${data.brideName} & ${data.groomName}'s Wedding`;
 
   const html = `<!DOCTYPE html>

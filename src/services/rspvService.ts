@@ -59,10 +59,7 @@ export const respondToRSVP = async (
   status: "confirmed" | "declined",
   member_count?: number
 ): Promise<Guest> => {
-  const guestResult = await pool.query<Guest>(
-    "SELECT * FROM guests WHERE token = $1",
-    [token]
-  );
+  const guestResult = await pool.query<Guest>("SELECT * FROM guests WHERE token = $1", [token]);
 
   if (guestResult.rows.length === 0) {
     throw new Error("Invalid or expired invitation link");
@@ -114,10 +111,7 @@ export const submitPreferences = async (
   }
 ): Promise<Guest> => {
   // Check token exists and guest is confirmed
-  const guestResult = await pool.query<Guest>(
-    "SELECT * FROM guests WHERE token = $1",
-    [token]
-  );
+  const guestResult = await pool.query<Guest>("SELECT * FROM guests WHERE token = $1", [token]);
 
   if (guestResult.rows.length === 0) {
     throw new Error("Invalid or expired invitation link");

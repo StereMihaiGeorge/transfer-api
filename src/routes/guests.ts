@@ -11,11 +11,7 @@ import {
 import { authenticate } from "../middleware/authenticate";
 import { authorizeEvent, authorizeGuest } from "../middleware/authorize";
 import { validate } from "../middleware/validate";
-import {
-  createGuestSchema,
-  updateGuestSchema,
-  assignTableSchema,
-} from "../schemas/guestSchema";
+import { createGuestSchema, updateGuestSchema, assignTableSchema } from "../schemas/guestSchema";
 
 const router = Router({ mergeParams: true }); // mergeParams to access :id from parent route
 

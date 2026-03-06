@@ -1,13 +1,16 @@
 export interface RsvpNotificationTemplateData {
   guestName: string;
-  status: 'confirmed' | 'declined';
+  status: "confirmed" | "declined";
   memberCount: number;
   brideName: string;
   groomName: string;
 }
 
-export function rsvpNotificationTemplate(data: RsvpNotificationTemplateData): { subject: string; html: string } {
-  const isConfirmed = data.status === 'confirmed';
+export function rsvpNotificationTemplate(data: RsvpNotificationTemplateData): {
+  subject: string;
+  html: string;
+} {
+  const isConfirmed = data.status === "confirmed";
 
   const subject = isConfirmed
     ? `${data.guestName} confirmed their attendance!`

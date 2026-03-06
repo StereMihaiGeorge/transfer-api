@@ -7,7 +7,7 @@ import {
   updateGuest,
   deleteGuest,
   assignGuestToTable,
-  markAsInvited
+  markAsInvited,
 } from "../services/guestService";
 import { sendInvitationEmail } from "../emails/emailService";
 

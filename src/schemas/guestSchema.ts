@@ -5,10 +5,7 @@ export const createGuestSchema = z.object({
     .string({ error: "Name is required" })
     .min(2, "Name must be at least 2 characters")
     .max(100, "Name must be less than 100 characters"),
-  email: z
-    .string()
-    .check(z.email("Invalid email format"))
-    .optional(),
+  email: z.string().check(z.email("Invalid email format")).optional(),
   phone: z
     .string()
     .min(10, "Phone must be at least 10 characters")
@@ -29,8 +26,5 @@ export const createGuestSchema = z.object({
 export const updateGuestSchema = createGuestSchema.partial();
 
 export const assignTableSchema = z.object({
-  table_id: z
-    .number({ error: "Table ID is required" })
-    .int()
-    .positive(),
+  table_id: z.number({ error: "Table ID is required" }).int().positive(),
 });

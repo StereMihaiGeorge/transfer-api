@@ -9,7 +9,10 @@ export interface InvitationTemplateData {
   rsvpUrl: string;
 }
 
-export function invitationTemplate(data: InvitationTemplateData): { subject: string; html: string } {
+export function invitationTemplate(data: InvitationTemplateData): {
+  subject: string;
+  html: string;
+} {
   const subject = `You're Invited — ${data.brideName} & ${data.groomName}'s Wedding`;
 
   const html = `<!DOCTYPE html>
@@ -38,9 +41,10 @@ export function invitationTemplate(data: InvitationTemplateData): { subject: str
           <tr>
             <td style="padding:48px 40px;text-align:center;">
               <p style="margin:0 0 8px;color:#555;font-size:15px;">Dear <strong style="color:#2c2c2c;">${data.guestName}</strong>,</p>
-              ${data.coverMessage
-                ? `<p style="margin:24px 0;color:#555;font-size:15px;line-height:1.7;">${data.coverMessage}</p>`
-                : `<p style="margin:24px 0;color:#555;font-size:15px;line-height:1.7;">We joyfully invite you to celebrate our wedding day with us.</p>`
+              ${
+                data.coverMessage
+                  ? `<p style="margin:24px 0;color:#555;font-size:15px;line-height:1.7;">${data.coverMessage}</p>`
+                  : `<p style="margin:24px 0;color:#555;font-size:15px;line-height:1.7;">We joyfully invite you to celebrate our wedding day with us.</p>`
               }
 
               <!-- Event details -->

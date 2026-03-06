@@ -1,5 +1,10 @@
 import { pool } from "../config/db";
-import { EventSong, SongRequest, CreateEventSongInput, CreateSongRequestInput } from "../models/song";
+import {
+  EventSong,
+  SongRequest,
+  CreateEventSongInput,
+  CreateSongRequestInput,
+} from "../models/song";
 import { Guest } from "../models/guests";
 
 export const createEventSong = async (
@@ -34,9 +39,7 @@ export const updateEventSong = async (
     throw new Error("No fields to update");
   }
 
-  const setClause = fields
-    .map((field, index) => `${field} = $${index + 1}`)
-    .join(", ");
+  const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
 
   const result = await pool.query<EventSong>(
     `UPDATE event_songs SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`,
@@ -51,10 +54,7 @@ export const updateEventSong = async (
 };
 
 export const deleteEventSong = async (songId: number): Promise<void> => {
-  const result = await pool.query(
-    "DELETE FROM event_songs WHERE id = $1 RETURNING id",
-    [songId]
-  );
+  const result = await pool.query("DELETE FROM event_songs WHERE id = $1 RETURNING id", [songId]);
 
   if (result.rows.length === 0) {
     throw new Error("Song not found");
@@ -79,10 +79,7 @@ export const createSongRequestByToken = async (
   token: string,
   input: CreateSongRequestInput
 ): Promise<SongRequest> => {
-  const guestResult = await pool.query<Guest>(
-    "SELECT * FROM guests WHERE token = $1",
-    [token]
-  );
+  const guestResult = await pool.query<Guest>("SELECT * FROM guests WHERE token = $1", [token]);
 
   if (guestResult.rows.length === 0) {
     throw new Error("Invalid or expired invitation link");
@@ -105,7 +102,12 @@ export const getSongRequestsByEventId = async (eventId: number): Promise<SongReq
   return result.rows;
 };
 
-type SpecialMoment = { moment: string; song_title: string; artist?: string | null; notes?: string | null };
+type SpecialMoment = {
+  moment: string;
+  song_title: string;
+  artist?: string | null;
+  notes?: string | null;
+};
 type GuestRequest = { song_title: string; artist?: string | null; genre: string };
 type GenreCount = { genre: string; count: string | number };
 
@@ -122,16 +124,16 @@ export const buildCSV = (
   };
 
   const specialRows = specialMoments
-    .map((s) => `${escape(s.moment)},${escape(s.song_title)},${escape(s.artist)},${escape(s.notes)}`)
+    .map(
+      (s) => `${escape(s.moment)},${escape(s.song_title)},${escape(s.artist)},${escape(s.notes)}`
+    )
     .join("\n");
 
   const requestRows = guestRequests
     .map((r) => `${escape(r.song_title)},${escape(r.artist)},${escape(r.genre)}`)
     .join("\n");
 
-  const summaryRows = genreSummary
-    .map((g) => `${escape(g.genre)},${g.count}`)
-    .join("\n");
+  const summaryRows = genreSummary.map((g) => `${escape(g.genre)},${g.count}`).join("\n");
 
   return [
     "=== MOMENTE SPECIALE ===",
@@ -150,10 +152,9 @@ export const buildCSV = (
 
 export const exportSongsAsCSV = async (eventId: number): Promise<string> => {
   const [specialSongs, guestRequests, genreSummary] = await Promise.all([
-    pool.query<EventSong>(
-      `SELECT * FROM event_songs WHERE event_id = $1 ORDER BY created_at ASC`,
-      [eventId]
-    ),
+    pool.query<EventSong>(`SELECT * FROM event_songs WHERE event_id = $1 ORDER BY created_at ASC`, [
+      eventId,
+    ]),
     pool.query<SongRequest>(
       `SELECT * FROM song_requests WHERE event_id = $1 ORDER BY genre ASC, song_title ASC`,
       [eventId]

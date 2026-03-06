@@ -1,11 +1,6 @@
 import { Response } from "express";
 import { AuthRequest } from "../middleware/authenticate";
-import {
-  createTodo,
-  getTodosByEventId,
-  updateTodo,
-  deleteTodo,
-} from "../services/todoService";
+import { createTodo, getTodosByEventId, updateTodo, deleteTodo } from "../services/todoService";
 
 export const create = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

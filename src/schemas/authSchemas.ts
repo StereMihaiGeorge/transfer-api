@@ -5,9 +5,7 @@ export const registerSchema = z.object({
     .string({ error: "Username is required" })
     .min(3, "Username must be at least 3 characters")
     .max(50, "Username must be less than 50 characters"),
-  email: z
-    .string({ error: "Email is required" })
-    .check(z.email("Invalid email format")),
+  email: z.string({ error: "Email is required" }).check(z.email("Invalid email format")),
   password: z
     .string({ error: "Password is required" })
     .min(8, "Password must be at least 8 characters")
@@ -16,12 +14,8 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z
-    .string({ error: "Email is required" })
-    .check(z.email("Invalid email format")),
-  password: z
-    .string({ error: "Password is required" })
-    .min(1, "Password is required"),
+  email: z.string({ error: "Email is required" }).check(z.email("Invalid email format")),
+  password: z.string({ error: "Password is required" }).min(1, "Password is required"),
 });
 
 export const refreshSchema = z.object({

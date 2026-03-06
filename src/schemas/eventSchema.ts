@@ -20,10 +20,7 @@ export const createEventSchema = z.object({
     .string({ error: "City is required" })
     .min(2, "City must be at least 2 characters")
     .max(100, "City must be less than 100 characters"),
-  cover_message: z
-    .string()
-    .max(1000, "Cover message must be less than 1000 characters")
-    .optional(),
+  cover_message: z.string().max(1000, "Cover message must be less than 1000 characters").optional(),
 });
 
 export const updateEventSchema = createEventSchema.partial();

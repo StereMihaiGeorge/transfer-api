@@ -34,10 +34,7 @@ export const getOne = async (req: AuthRequest, res: Response): Promise<void> => 
   try {
     const tid = Array.isArray(req.params.tid) ? req.params.tid[0] : req.params.tid;
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const table = await getTableById(
-      Number.parseInt(tid),
-      Number.parseInt(id)
-    );
+    const table = await getTableById(Number.parseInt(tid), Number.parseInt(id));
     if (!table) {
       res.status(404).json({ error: "Table not found" });
       return;

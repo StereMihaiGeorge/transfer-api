@@ -1,13 +1,13 @@
 export type SongGenre =
-  | 'pop'
-  | 'rock'
-  | 'manele'
-  | 'house'
-  | 'jazz'
-  | 'classical'
-  | 'folk'
-  | 'populara'
-  | 'other';
+  | "pop"
+  | "rock"
+  | "manele"
+  | "house"
+  | "jazz"
+  | "classical"
+  | "folk"
+  | "populara"
+  | "other";
 
 export interface EventSong {
   id: number;

@@ -9,24 +9,18 @@ export const generateSlug = (brideName: string, groomName: string, date: string)
     .toLowerCase()
     .normalize("NFD")
     .replaceAll(/[\u0300-\u036f]/g, "") // remove diacritics (ă, â, î, ș, ț)
-    .replaceAll(/[^a-z0-9-]/g, "-")     // replace special chars with dash
-    .replaceAll(/-+/g, "-")             // remove duplicate dashes
-    .replaceAll(/^-|-$/g, "");          // trim leading/trailing dashes
+    .replaceAll(/[^a-z0-9-]/g, "-") // replace special chars with dash
+    .replaceAll(/-+/g, "-") // remove duplicate dashes
+    .replaceAll(/^-|-$/g, ""); // trim leading/trailing dashes
   return slug;
 };
 
-export const createEvent = async (
-  userId: number,
-  input: CreateEventInput
-): Promise<Event> => {
+export const createEvent = async (userId: number, input: CreateEventInput): Promise<Event> => {
   // Generate slug from names
   let slug = generateSlug(input.bride_name, input.groom_name, input.date);
 
   // Check if slug already exists and make it unique if needed
-  const existing = await pool.query(
-    "SELECT id FROM events WHERE slug = $1",
-    [slug]
-  );
+  const existing = await pool.query("SELECT id FROM events WHERE slug = $1", [slug]);
   if (existing.rows.length > 0) {
     slug = `${slug}-${Date.now()}`;
   }
@@ -50,16 +44,13 @@ export const createEvent = async (
   const event = result.rows[0];
 
   // Seed default todos for the new event
-  await seedDefaultTodos(event.id); 
+  await seedDefaultTodos(event.id);
 
   return event;
 };
 
 export const getEventById = async (eventId: number): Promise<Event | null> => {
-  const result = await pool.query<Event>(
-    "SELECT * FROM events WHERE id = $1",
-    [eventId]
-  );
+  const result = await pool.query<Event>("SELECT * FROM events WHERE id = $1", [eventId]);
   return result.rows[0] || null;
 };
 
@@ -75,9 +66,7 @@ export const updateEvent = async (
     throw new Error("No fields to update");
   }
 
-  const setClause = fields
-    .map((field, index) => `${field} = $${index + 1}`)
-    .join(", ");
+  const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
 
   const result = await pool.query<Event>(
     `UPDATE events SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`,

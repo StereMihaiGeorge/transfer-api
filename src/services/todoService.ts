@@ -24,21 +24,12 @@ export const seedDefaultTodos = async (eventId: number): Promise<void> => {
   }
 };
 
-export const createTodo = async (
-  eventId: number,
-  input: CreateTodoInput
-): Promise<Todo> => {
+export const createTodo = async (eventId: number, input: CreateTodoInput): Promise<Todo> => {
   const result = await pool.query<Todo>(
     `INSERT INTO todos (event_id, title, category, due_date, notes)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
-    [
-      eventId,
-      input.title,
-      input.category,
-      input.due_date || null,
-      input.notes || null,
-    ]
+    [eventId, input.title, input.category, input.due_date || null, input.notes || null]
   );
   return result.rows[0];
 };
@@ -71,9 +62,7 @@ export const updateTodo = async (
     throw new Error("No fields to update");
   }
 
-  const setClause = fields
-    .map((field, index) => `${field} = $${index + 1}`)
-    .join(", ");
+  const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
 
   const result = await pool.query<Todo>(
     `UPDATE todos SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`,
@@ -88,10 +77,7 @@ export const updateTodo = async (
 };
 
 export const deleteTodo = async (todoId: number): Promise<void> => {
-  const result = await pool.query(
-    "DELETE FROM todos WHERE id = $1 RETURNING id",
-    [todoId]
-  );
+  const result = await pool.query("DELETE FROM todos WHERE id = $1 RETURNING id", [todoId]);
 
   if (result.rows.length === 0) {
     throw new Error("Todo not found");

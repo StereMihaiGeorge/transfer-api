@@ -1,6 +1,6 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === "production";
 
 async function createTransporter() {
   if (isProduction) {
@@ -16,10 +16,10 @@ async function createTransporter() {
   }
 
   const testAccount = await nodemailer.createTestAccount();
-  console.log('[Mailer] Ethereal test account created:', testAccount.user);
+  console.log("[Mailer] Ethereal test account created:", testAccount.user);
 
   return nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
+    host: "smtp.ethereal.email",
     port: 587,
     secure: false,
     auth: {
@@ -39,5 +39,5 @@ export function getTransporter(): Promise<nodemailer.Transporter> {
 }
 
 export function getFromAddress(): string {
-  return process.env.SMTP_FROM || 'noreply@nuntaperfecta.ro';
+  return process.env.SMTP_FROM || "noreply@nuntaperfecta.ro";
 }

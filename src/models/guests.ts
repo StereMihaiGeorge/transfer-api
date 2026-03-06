@@ -12,6 +12,7 @@ export interface Guest {
   status: GuestStatus;
   meal_preference: string | null;
   invitation_sent: boolean;
+  member_count: number;
   special_needs: string | null;
   sit_with: string | null;
   not_sit_with: string | null;
@@ -26,4 +27,5 @@ export interface CreateGuestInput {
   email?: string;
   phone?: string;
   side: GuestSide;
+  member_count?: number;
 }

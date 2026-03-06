@@ -11,6 +11,9 @@ export interface AuthRequest extends Request {
         id: number,
         user_id: number,
     }
+    guest?: {
+        id: number,
+    }
 }
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {

@@ -67,6 +67,7 @@ const migrate = async () => {
     status           VARCHAR(20) NOT NULL DEFAULT 'pending',
     meal_preference  VARCHAR(100),
     invitation_sent  BOOLEAN NOT NULL DEFAULT FALSE,
+    member_count     INTEGER NOT NULL DEFAULT 1,
     token            UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
     token_expires_at TIMESTAMP,
     responded_at     TIMESTAMP,
@@ -78,6 +79,7 @@ const migrate = async () => {
   ALTER TABLE guests ADD COLUMN IF NOT EXISTS special_needs TEXT;
   ALTER TABLE guests ADD COLUMN IF NOT EXISTS sit_with VARCHAR(255);
   ALTER TABLE guests ADD COLUMN IF NOT EXISTS not_sit_with VARCHAR(255);
+  ALTER TABLE guests ADD COLUMN IF NOT EXISTS member_count INTEGER NOT NULL DEFAULT 1;
 `);
 console.log("✅ Guest preference columns ready");   
     

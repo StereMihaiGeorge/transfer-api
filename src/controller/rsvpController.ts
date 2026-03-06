@@ -18,9 +18,12 @@ export const getInvitation = async (req: Request, res: Response): Promise<void> 
 
 export const respond = async (req: Request, res: Response): Promise<void> => {
   try {
-    const token = String(req.params.token);
-    const { status } = req.body;
-    const guest = await respondToRSVP(token, status);
+    const token = String(req.params.token); 
+    const { status, member_count } = req.body;
+
+    console.log("RSVP body:", req.body);
+    console.log("member_count:", member_count, typeof member_count);
+    const guest = await respondToRSVP(token, status, member_count);
 
     res.status(200).json({
       message: status === "confirmed"

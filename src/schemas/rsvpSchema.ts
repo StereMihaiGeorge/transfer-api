@@ -4,6 +4,12 @@ export const rsvpSchema = z.object({
   status: z.enum(["confirmed", "declined"], {
     error: "Status must be confirmed or declined",
   }),
+  member_count: z
+    .number()
+    .int()
+    .min(1, "Must have at least 1 member")
+    .max(20, "Cannot exceed 20 members")
+    .optional(),
 });
 
 export const preferencesSchema = z.object({

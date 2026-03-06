@@ -74,9 +74,11 @@ export const loginUser = async (
     const decoded = jwt.decode(refreshToken) as { exp: number };
     const expiresAt = new Date(decoded.exp * 1000);
 
+    const hashedToken = await bcrypt.hash(refreshToken, SALT_ROUNDS);
+
     await pool.query(
         "INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)",
-        [user.id, refreshToken, expiresAt]
+        [user.id, hashedToken, expiresAt]
     );
 
     return { accessToken, refreshToken };
@@ -94,11 +96,15 @@ export const refreshAccessToken = async (
     }
 
     const result = await pool.query(
-        "SELECT id FROM refresh_tokens WHERE token = $1 AND expires_at > NOW()",
-        [refreshToken]
+        "SELECT id, token FROM refresh_tokens WHERE user_id = $1 AND expires_at > NOW()",
+        [payload.id]
     );
 
-    if (result.rows.length === 0) {
+    const matched = await Promise.all(
+        result.rows.map((row) => bcrypt.compare(refreshToken, row.token))
+    ).then((results) => results.some(Boolean));
+
+    if (!matched) {
         throw new Error("Refresh token not found or revoked");
     }
 
@@ -110,8 +116,23 @@ export const refreshAccessToken = async (
 };
 
 export const logoutUser = async (refreshToken: string): Promise<void> => {
-    await pool.query(
-        "DELETE FROM refresh_tokens WHERE token = $1",
-        [refreshToken]
+    let payload: { id: number };
+    try {
+        payload = jwt.verify(refreshToken, ENV.JWT_REFRESH_SECRET) as { id: number };
+    } catch {
+        return; // token is invalid/expired — nothing to revoke
+    }
+
+    const result = await pool.query(
+        "SELECT id, token FROM refresh_tokens WHERE user_id = $1 AND expires_at > NOW()",
+        [payload.id]
     );
+
+    for (const row of result.rows) {
+        const match = await bcrypt.compare(refreshToken, row.token);
+        if (match) {
+            await pool.query("DELETE FROM refresh_tokens WHERE id = $1", [row.id]);
+            return;
+        }
+    }
 };

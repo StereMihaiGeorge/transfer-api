@@ -9,6 +9,7 @@ import tableRoutes from "./routes/tables";
 import rsvpRoutes from "./routes/rsvp";
 import todoRoutes from "./routes/todo";
 import { errorHandler } from "./middleware/errorHandler";
+import { sanitizeInput } from "./middleware/sanitize";
 import { logger } from "./middleware/logger";
 import "./config/db"; // trigger connection test on startup
 
@@ -42,7 +43,8 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '10kb' })); // limit JSON body to 10kb
+app.use(sanitizeInput);
 app.use(logger);
 app.use(generalLimiter);
 
@@ -52,12 +54,12 @@ app.get("/health", (_, res) => {
     res.json({ status: "ok"})
 })
 
-app.use("/api/auth", authLimiter, authRoutes);
-app.use("/api/events", eventRoutes);
-app.use("/api/events/:id/guests", guestRoutes);
-app.use("/api/events/:id/tables", tableRoutes);
-app.use("/api/events/:id/todos", todoRoutes);
-app.use("/api/rsvp", rsvpRoutes);
+app.use("/api/v1/auth", authLimiter, authRoutes);
+app.use("/api/v1/events", eventRoutes);
+app.use("/api/v1/events/:id/guests", guestRoutes);
+app.use("/api/v1/events/:id/tables", tableRoutes);
+app.use("/api/v1/events/:id/todos", todoRoutes);
+app.use("/api/v1/rsvp", rsvpRoutes);
 
 
 app.use(errorHandler);

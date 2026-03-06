@@ -17,6 +17,13 @@ export const createGuestSchema = z.object({
   side: z.enum(["bride", "groom", "both"], {
     error: "Side must be bride, groom or both",
   }),
+  member_count: z
+    .number()
+    .int()
+    .min(1, "Must have at least 1 member")
+    .max(20, "Cannot exceed 20 members per entry")
+    .default(1)
+    .optional(),
 });
 
 export const updateGuestSchema = createGuestSchema.partial();

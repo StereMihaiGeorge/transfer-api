@@ -8,7 +8,7 @@ import {
   markInvited,
 } from "../controller/guestController";
 import { authenticate } from "../middleware/authenticate";
-import { authorizeEvent } from "../middleware/authorize";
+import { authorizeEvent, authorizeGuest } from "../middleware/authorize";
 import { validate } from "../middleware/validate";
 import {
   createGuestSchema,
@@ -23,9 +23,9 @@ router.use(authenticate, authorizeEvent);
 
 router.post("/", validate(createGuestSchema), create);
 router.get("/", getAll);
-router.put("/:gid", validate(updateGuestSchema), update);
-router.delete("/:gid", remove);
-router.put("/:gid/assign-table", validate(assignTableSchema), assignTable);
-router.put("/:gid/mark-invited", markInvited);
+router.put("/:gid", authorizeGuest, validate(updateGuestSchema), update);
+router.delete("/:gid", authorizeGuest, remove);
+router.put("/:gid/assign-table", authorizeGuest, validate(assignTableSchema), assignTable);
+router.put("/:gid/mark-invited", authorizeGuest, markInvited);
 
 export default router;

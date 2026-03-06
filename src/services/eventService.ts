@@ -95,15 +95,16 @@ export const getEventDashboard = async (eventId: number) => {
   // Guest stats
   const guestStats = await pool.query(
     `SELECT
-      COUNT(*) AS total_guests,
-      COUNT(*) FILTER (WHERE status = 'confirmed') AS confirmed,
-      COUNT(*) FILTER (WHERE status = 'declined') AS declined,
-      COUNT(*) FILTER (WHERE status = 'pending') AS pending,
-      COUNT(*) FILTER (WHERE invitation_sent = true) AS invited,
-      COUNT(*) FILTER (WHERE invitation_sent = false) AS not_invited,
-      COUNT(*) FILTER (WHERE side = 'bride') AS bride_side,
-      COUNT(*) FILTER (WHERE side = 'groom') AS groom_side,
-      COUNT(*) FILTER (WHERE side = 'both') AS both_side
+      COALESCE(SUM(member_count), 0) AS total_people,
+      COUNT(*) AS total_entries,
+      COALESCE(SUM(member_count) FILTER (WHERE status = 'confirmed'), 0) AS confirmed_people,
+      COALESCE(SUM(member_count) FILTER (WHERE status = 'declined'), 0) AS declined_people,
+      COALESCE(SUM(member_count) FILTER (WHERE status = 'pending'), 0) AS pending_people,
+      COALESCE(SUM(member_count) FILTER (WHERE invitation_sent = true), 0) AS invited_people,
+      COALESCE(SUM(member_count) FILTER (WHERE invitation_sent = false), 0) AS not_invited_people,
+      COALESCE(SUM(member_count) FILTER (WHERE side = 'bride'), 0) AS bride_side,
+      COALESCE(SUM(member_count) FILTER (WHERE side = 'groom'), 0) AS groom_side,
+      COALESCE(SUM(member_count) FILTER (WHERE side = 'both'), 0) AS both_side
      FROM guests
      WHERE event_id = $1`,
     [eventId]
@@ -114,8 +115,8 @@ export const getEventDashboard = async (eventId: number) => {
     `SELECT
       COUNT(DISTINCT t.id) AS total_tables,
       COALESCE(SUM(t.capacity), 0) AS total_capacity,
-      COUNT(g.id) AS occupied_spots,
-      COALESCE(SUM(t.capacity), 0) - COUNT(g.id) AS available_spots
+      COALESCE(SUM(g.member_count), 0) AS occupied_spots,
+      COALESCE(SUM(t.capacity), 0) - COALESCE(SUM(g.member_count), 0) AS available_spots
      FROM tables t
      LEFT JOIN guests g ON g.table_id = t.id
      WHERE t.event_id = $1`,
@@ -150,12 +151,13 @@ export const getEventDashboard = async (eventId: number) => {
 
   return {
     guests: {
-      total: Number.parseInt(guests.total_guests),
-      confirmed: Number.parseInt(guests.confirmed),
-      declined: Number.parseInt(guests.declined),
-      pending: Number.parseInt(guests.pending),
-      invited: Number.parseInt(guests.invited),
-      not_invited: Number.parseInt(guests.not_invited),
+      total_entries: Number.parseInt(guests.total_entries),
+      total_people: Number.parseInt(guests.total_people),
+      confirmed: Number.parseInt(guests.confirmed_people),
+      declined: Number.parseInt(guests.declined_people),
+      pending: Number.parseInt(guests.pending_people),
+      invited: Number.parseInt(guests.invited_people),
+      not_invited: Number.parseInt(guests.not_invited_people),
     },
     tables: {
       total: Number.parseInt(tables.total_tables),

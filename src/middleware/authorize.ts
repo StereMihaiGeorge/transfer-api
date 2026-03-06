@@ -40,3 +40,35 @@ export const authorizeEvent = async (
     next(error);
   }
 };
+
+export const authorizeGuest = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const guestId = Number.parseInt(req.params.gid as string);
+    const eventId = req.event?.id;
+
+    if (Number.isNaN(guestId)) {
+      res.status(400).json({ error: "Invalid guest ID" });
+      return;
+    }
+
+    const result = await pool.query(
+      "SELECT id FROM guests WHERE id = $1 AND event_id = $2",
+      [guestId, eventId]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: "Guest not found" });
+      return;
+    }
+
+    req.guest = { id: result.rows[0].id };
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};

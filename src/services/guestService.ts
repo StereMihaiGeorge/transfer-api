@@ -6,10 +6,10 @@ export const createGuest = async (
   input: CreateGuestInput
 ): Promise<Guest> => {
   const result = await pool.query<Guest>(
-    `INSERT INTO guests (event_id, name, email, phone, side)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO guests (event_id, name, email, phone, side, member_count)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [eventId, input.name, input.email || null, input.phone || null, input.side]
+    [eventId, input.name, input.email || null, input.phone || null, input.side, input.member_count ?? 1]
   );
   return result.rows[0];
 };
@@ -79,17 +79,25 @@ export const assignGuestToTable = async (
     throw new Error("Table not found or does not belong to this event");
   }
 
-  // Check table capacity
-  const guestsAtTable = await pool.query(
-    "SELECT COUNT(*) FROM guests WHERE table_id = $1",
+  // Get the guest's member_count
+  const guestResult = await pool.query(
+    "SELECT member_count FROM guests WHERE id = $1",
+    [guestId]
+  );
+  const memberCount = Number.parseInt(guestResult.rows[0]?.member_count ?? 1);
+
+  // Check table capacity using sum of member_count
+  const occupiedResult = await pool.query(
+    "SELECT COALESCE(SUM(member_count), 0) AS occupied FROM guests WHERE table_id = $1",
     [tableId]
   );
 
-  const currentCount = Number.parseInt(guestsAtTable.rows[0].count);
+  const occupied = Number.parseInt(occupiedResult.rows[0].occupied);
   const capacity = table.rows[0].capacity;
+  const available = capacity - occupied;
 
-  if (currentCount >= capacity) {
-    throw new Error(`Table is full (capacity: ${capacity})`);
+  if (memberCount > available) {
+    throw new Error(`Not enough spots at this table. Available: ${available}, Required: ${memberCount}`);
   }
 
   const result = await pool.query<Guest>(

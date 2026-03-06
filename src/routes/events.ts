@@ -9,9 +9,10 @@ const router = Router();
 
 // All routes require authentication
 router.post("/", authenticate, validate(createEventSchema), create);
+router.get("/:id/dashboard", authenticate, authorizeEvent, dashboard);
 router.get("/:id", authenticate, authorizeEvent, getById);
 router.put("/:id", authenticate, authorizeEvent, validate(updateEventSchema), update);
 router.delete("/:id", authenticate, authorizeEvent, remove);
-router.get("/:id/dashboard", authenticate, authorizeEvent, dashboard);
+
 
 export default router;

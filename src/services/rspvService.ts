@@ -55,9 +55,9 @@ export const getGuestByToken = async (token: string): Promise<RSVPResponse> => {
 
 export const respondToRSVP = async (
   token: string,
-  status: "confirmed" | "declined"
+  status: "confirmed" | "declined",
+  member_count?: number
 ): Promise<Guest> => {
-  // Check token exists
   const guestResult = await pool.query<Guest>(
     "SELECT * FROM guests WHERE token = $1",
     [token]
@@ -69,22 +69,32 @@ export const respondToRSVP = async (
 
   const guest = guestResult.rows[0];
 
-  // Check if already responded
   if (guest.status !== "pending") {
-    throw new Error(
-      `You have already ${guest.status} this invitation`
-    );
+    throw new Error(`You have already ${guest.status} this invitation`);
   }
 
-  // Update status
-  const result = await pool.query<Guest>(
-    `UPDATE guests 
-     SET status = $1, responded_at = NOW()
-     WHERE token = $2
-     RETURNING *`,
-    [status, token]
-  );
+  // Build query dynamically based on whether member_count is provided
+  let query: string;
+  let params: (string | number)[];
 
+  if (member_count && member_count > 1) {
+    query = `UPDATE guests 
+             SET status = $1, 
+                 responded_at = NOW(),
+                 member_count = $2
+             WHERE token = $3
+             RETURNING *`;
+    params = [status, member_count, token];
+  } else {
+    query = `UPDATE guests 
+             SET status = $1,
+                 responded_at = NOW()
+             WHERE token = $2
+             RETURNING *`;
+    params = [status, token];
+  }
+
+  const result = await pool.query<Guest>(query, params);
   return result.rows[0];
 };
 

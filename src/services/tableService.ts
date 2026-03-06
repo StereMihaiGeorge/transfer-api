@@ -17,8 +17,8 @@ export const createTable = async (
 export const getTablesByEventId = async (eventId: number): Promise<Table[]> => {
   const result = await pool.query<Table>(
     `SELECT t.*,
-      COUNT(g.id) AS guests_count,
-      t.capacity - COUNT(g.id) AS available_spots
+      COALESCE(SUM(g.member_count), 0) AS occupied_spots,
+      t.capacity - COALESCE(SUM(g.member_count), 0) AS available_spots
      FROM tables t
      LEFT JOIN guests g ON g.table_id = t.id
      WHERE t.event_id = $1

@@ -108,8 +108,6 @@ export const submitPreferences = async (
   token: string,
   preferences: {
     meal_preference: string;
-    song_title?: string;
-    artist?: string;
     special_needs?: string;
     sit_with?: string;
     not_sit_with?: string;
@@ -149,20 +147,6 @@ export const submitPreferences = async (
       token,
     ]
   );
-
-  // Save song request if provided
-  if (preferences.song_title) {
-    await pool.query(
-      `INSERT INTO song_requests (event_id, guest_id, song_title, artist)
-       VALUES ($1, $2, $3, $4)`,
-      [
-        guest.event_id,
-        guest.id,
-        preferences.song_title,
-        preferences.artist || null,
-      ]
-    );
-  }
 
   return result.rows[0];
 };

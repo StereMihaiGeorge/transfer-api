@@ -99,7 +99,24 @@ const migrate = async () => {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
+    await client.query(`
+      ALTER TABLE song_requests ADD COLUMN IF NOT EXISTS genre VARCHAR(50) DEFAULT 'other';
+    `);
     console.log("✅ Table 'song_requests' ready");
+
+    // Event songs table (couple's special moment songs)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS event_songs (
+        id         SERIAL PRIMARY KEY,
+        event_id   INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+        moment     VARCHAR(100) NOT NULL,
+        song_title VARCHAR(255) NOT NULL,
+        artist     VARCHAR(255),
+        notes      TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log("✅ Table 'event_songs' ready");
 
     // Email logs table
     await client.query(`
@@ -158,6 +175,7 @@ const migrate = async () => {
   CREATE INDEX IF NOT EXISTS idx_email_logs_event_id ON email_logs(event_id);
   CREATE INDEX IF NOT EXISTS idx_events_user_id ON events(user_id);
   CREATE INDEX IF NOT EXISTS idx_guests_token ON guests(token);
+  CREATE INDEX IF NOT EXISTS idx_event_songs_event_id ON event_songs(event_id);
 `);
     console.log("✅ Indexes ready");
 

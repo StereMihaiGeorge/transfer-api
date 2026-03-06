@@ -4,6 +4,7 @@ import {
   respondToRSVP,
   submitPreferences,
 } from "../services/rspvService";
+import { createSongRequestByToken } from "../services/songService";
 import { sendPreferencesEmail } from "../emails/emailService";
 
 export const getInvitation = async (req: Request, res: Response): Promise<void> => {
@@ -51,6 +52,17 @@ export const preferences = async (req: Request, res: Response): Promise<void> =>
       message: "Preferences saved successfully",
       guest,
     });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
+    res.status(400).json({ error: message });
+  }
+};
+
+export const addSongRequest = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const token = String(req.params.token);
+    const songRequest = await createSongRequestByToken(token, req.body);
+    res.status(201).json({ message: "Song request submitted successfully", songRequest });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(400).json({ error: message });

@@ -8,6 +8,7 @@ import guestRoutes from "./routes/guests";
 import tableRoutes from "./routes/tables";
 import rsvpRoutes from "./routes/rsvp";
 import todoRoutes from "./routes/todo";
+import songRoutes from "./routes/songs";
 import { errorHandler } from "./middleware/errorHandler";
 import { sanitizeInput } from "./middleware/sanitize";
 import { logger } from "./middleware/logger";
@@ -59,6 +60,7 @@ app.use("/api/v1/events", eventRoutes);
 app.use("/api/v1/events/:id/guests", guestRoutes);
 app.use("/api/v1/events/:id/tables", tableRoutes);
 app.use("/api/v1/events/:id/todos", todoRoutes);
+app.use("/api/v1/events/:id/songs", songRoutes);
 app.use("/api/v1/rsvp", rsvpRoutes);
 
 

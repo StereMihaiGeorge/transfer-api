@@ -16,14 +16,6 @@ export const preferencesSchema = z.object({
   meal_preference: z
     .string({ error: "Meal preference is required" })
     .max(100, "Meal preference must be less than 100 characters"),
-  song_title: z
-    .string()
-    .max(255, "Song title must be less than 255 characters")
-    .optional(),
-  artist: z
-    .string()
-    .max(255, "Artist must be less than 255 characters")
-    .optional(),
   special_needs: z
     .string()
     .max(500, "Special needs must be less than 500 characters")

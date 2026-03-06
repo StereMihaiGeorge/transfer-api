@@ -2,6 +2,8 @@ import express from 'express';
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
 import authRoutes from "./routes/auth";
 import eventRoutes from "./routes/events";
 import guestRoutes from "./routes/guests";
@@ -49,7 +51,10 @@ app.use(sanitizeInput);
 app.use(logger);
 app.use(generalLimiter);
 
-// Health check 
+// Swagger docs
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Health check
 
 app.get("/health", (_, res) => {
     res.json({ status: "ok"})
@@ -67,5 +72,6 @@ app.use("/api/v1/rsvp", rsvpRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log(`Server running on htpp://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`📚 Swagger docs: http://localhost:${PORT}/api/docs`);
 })

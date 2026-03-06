@@ -141,6 +141,18 @@ await client.query(`
 console.log("✅ Table 'todos' ready");
 
 
+// Indexes for performance
+await client.query(`
+  CREATE INDEX IF NOT EXISTS idx_guests_event_id ON guests(event_id);
+  CREATE INDEX IF NOT EXISTS idx_tables_event_id ON tables(event_id);
+  CREATE INDEX IF NOT EXISTS idx_todos_event_id ON todos(event_id);
+  CREATE INDEX IF NOT EXISTS idx_song_requests_event_id ON song_requests(event_id);
+  CREATE INDEX IF NOT EXISTS idx_email_logs_event_id ON email_logs(event_id);
+  CREATE INDEX IF NOT EXISTS idx_events_user_id ON events(user_id);
+  CREATE INDEX IF NOT EXISTS idx_guests_token ON guests(token);
+`);
+console.log("✅ Indexes ready");
+
     console.log("\n✅ All migrations completed successfully!");
   } catch (error) {
     console.error("❌ Migration failed:", error);

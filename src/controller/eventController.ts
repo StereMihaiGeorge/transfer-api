@@ -5,6 +5,7 @@ import {
   getEventById,
   updateEvent,
   deleteEvent,
+  getEventDashboard,
 } from "../services/eventService";
 
 export const create = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -41,6 +42,16 @@ export const remove = async (req: AuthRequest, res: Response): Promise<void> => 
   try {
     await deleteEvent(Number.parseInt(req.params.id as string));
     res.status(200).json({ message: "Event deleted successfully" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
+    res.status(400).json({ error: message });
+  }
+};
+
+export const dashboard = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const data = await getEventDashboard(Number.parseInt(req.params.id as string));
+    res.status(200).json(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(400).json({ error: message });

@@ -1,5 +1,6 @@
 import { pool } from "../config/db";
 import { Event, CreateEventInput } from "../models/event";
+import { seedDefaultTodos } from "./todoService";
 
 // Generate a URL-friendly slug from bride and groom names
 const generateSlug = (brideName: string, groomName: string, date: string): string => {
@@ -46,7 +47,12 @@ export const createEvent = async (
     ]
   );
 
-  return result.rows[0];
+  const event = result.rows[0];
+
+  // Seed default todos for the new event
+  await seedDefaultTodos(event.id); 
+
+  return event;
 };
 
 export const getEventById = async (eventId: number): Promise<Event | null> => {

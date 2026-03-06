@@ -125,6 +125,22 @@ console.log("✅ Guest preference columns ready");
     `);
     console.log("✅ Table 'refresh_tokens' ready");
 
+    // Todos table
+await client.query(`
+  CREATE TABLE IF NOT EXISTS todos (
+    id         SERIAL PRIMARY KEY,
+    event_id   INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    title      VARCHAR(255) NOT NULL,
+    category   VARCHAR(50) NOT NULL DEFAULT 'other',
+    status     VARCHAR(20) NOT NULL DEFAULT 'pending',
+    due_date   DATE,
+    notes      TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+`);
+console.log("✅ Table 'todos' ready");
+
+
     console.log("\n✅ All migrations completed successfully!");
   } catch (error) {
     console.error("❌ Migration failed:", error);

@@ -7,6 +7,7 @@ import eventRoutes from "./routes/events";
 import guestRoutes from "./routes/guests";
 import tableRoutes from "./routes/tables";
 import rsvpRoutes from "./routes/rsvp";
+import todoRoutes from "./routes/todo";
 import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./middleware/logger";
 import "./config/db"; // trigger connection test on startup
@@ -55,6 +56,7 @@ app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/events/:id/guests", guestRoutes);
 app.use("/api/events/:id/tables", tableRoutes);
+app.use("/api/events/:id/todos", todoRoutes);
 app.use("/api/rsvp", rsvpRoutes);
 
 

@@ -10,7 +10,12 @@ export class AppError extends Error {
   }
 }
 
-export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction): void => {
+export const errorHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  _next: NextFunction
+): void => {
   console.error(`❌ Error: ${err.message}`);
 
   // Known operational error (we threw it intentionally)

@@ -17,6 +17,7 @@
     "start": "node dist/index.js"
   },
   "keywords": [],
+  "lint": "eslint src/**/*.ts",
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -37,6 +38,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

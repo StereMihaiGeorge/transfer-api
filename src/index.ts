@@ -15,7 +15,7 @@ import { errorHandler } from "./middleware/errorHandler";
 import { sanitizeInput } from "./middleware/sanitize";
 import { httpLogger } from "./middleware/httpLogger";
 import logger from "./config/logger";
-import "./config/db"; // trigger connection test on startup
+import { pool } from "./config/db";
 
 const app = express();
 const PORT = 3000;
@@ -58,9 +58,55 @@ app.use(generalLimiter);
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check
+app.get("/health", async (_, res) => {
+  const start = Date.now();
 
-app.get("/health", (_, res) => {
-  res.json({ status: "ok" });
+  try {
+    await pool.query("SELECT 1");
+    const dbResponseTime = Date.now() - start;
+
+    const memUsage = process.memoryUsage();
+    const memUsedMB = Math.round(memUsage.heapUsed / 1024 / 1024);
+    const memTotalMB = Math.round(memUsage.heapTotal / 1024 / 1024);
+    const memPercentage = Math.round((memUsedMB / memTotalMB) * 100);
+
+    const uptimeSeconds = process.uptime();
+    const days = Math.floor(uptimeSeconds / 86400);
+    const hours = Math.floor((uptimeSeconds % 86400) / 3600);
+    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+    const uptime = `${days}d ${hours}h ${minutes}m`;
+
+    res.status(200).json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || "1.0.0",
+      environment: process.env.NODE_ENV || "development",
+      uptime,
+      checks: {
+        database: {
+          status: "ok",
+          responseTime: `${dbResponseTime}ms`,
+        },
+        memory: {
+          status: memPercentage > 90 ? "warning" : "ok",
+          used: `${memUsedMB}MB`,
+          total: `${memTotalMB}MB`,
+          percentage: `${memPercentage}%`,
+        },
+      },
+    });
+  } catch {
+    res.status(503).json({
+      status: "down",
+      timestamp: new Date().toISOString(),
+      checks: {
+        database: {
+          status: "down",
+          error: "Database connection failed",
+        },
+      },
+    });
+  }
 });
 
 app.use("/api/v1/auth", authLimiter, authRoutes);

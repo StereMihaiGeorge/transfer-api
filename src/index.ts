@@ -13,7 +13,8 @@ import todoRoutes from "./routes/todo";
 import songRoutes from "./routes/songs";
 import { errorHandler } from "./middleware/errorHandler";
 import { sanitizeInput } from "./middleware/sanitize";
-import { logger } from "./middleware/logger";
+import { httpLogger } from "./middleware/httpLogger";
+import logger from "./config/logger";
 import "./config/db"; // trigger connection test on startup
 
 const app = express();
@@ -50,7 +51,7 @@ const generalLimiter = rateLimit({
 
 app.use(express.json({ limit: "10kb" })); // limit JSON body to 10kb
 app.use(sanitizeInput);
-app.use(logger);
+app.use(httpLogger);
 app.use(generalLimiter);
 
 // Swagger docs
@@ -73,6 +74,6 @@ app.use("/api/v1/rsvp", rsvpRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`📚 Swagger docs: http://localhost:${PORT}/api/docs`);
+  logger.info(`🚀 Server running on http://localhost:${PORT}`);
+  logger.info(`📚 Swagger docs: http://localhost:${PORT}/api/docs`);
 });

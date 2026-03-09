@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import logger from "../config/logger";
 import { pool } from "../config/db";
 import { getTransporter, getFromAddress } from "../config/mailer";
 import { invitationTemplate } from "./templates/invitation";
@@ -62,7 +63,7 @@ async function sendMail(
 
   const previewUrl = nodemailer.getTestMessageUrl(info);
   if (previewUrl) {
-    console.log(`[Mailer] Preview URL: ${previewUrl}`);
+    logger.info(`[Mailer] Preview URL: ${previewUrl}`);
   }
 }
 
@@ -102,7 +103,7 @@ export async function sendInvitationEmail(
     await logEmail(guestId, eventId, "invitation", "sent");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[Mailer] Failed to send invitation email:", message);
+    logger.error(`[Mailer] Failed to send invitation email: ${message}`);
     await logEmail(guestId, eventId, "invitation", "failed", message);
     throw err;
   }
@@ -130,7 +131,7 @@ export async function sendRsvpConfirmationEmail(guestId: number, eventId: number
     await logEmail(guestId, eventId, "rsvp_confirmation", "sent");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[Mailer] Failed to send RSVP confirmation email:", message);
+    logger.error(`[Mailer] Failed to send RSVP confirmation email: ${message}`);
     await logEmail(guestId, eventId, "rsvp_confirmation", "failed", message);
     throw err;
   }
@@ -161,7 +162,7 @@ export async function sendRsvpNotificationEmail(guestId: number, eventId: number
     await logEmail(guestId, eventId, "rsvp_notification", "sent");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[Mailer] Failed to send RSVP notification email:", message);
+    logger.error(`[Mailer] Failed to send RSVP notification email: ${message}`);
     await logEmail(guestId, eventId, "rsvp_notification", "failed", message);
     throw err;
   }
@@ -190,7 +191,7 @@ export async function sendReminderEmail(guestId: number, eventId: number): Promi
     await logEmail(guestId, eventId, "reminder", "sent");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[Mailer] Failed to send reminder email:", message);
+    logger.error(`[Mailer] Failed to send reminder email: ${message}`);
     await logEmail(guestId, eventId, "reminder", "failed", message);
     throw err;
   }
@@ -221,7 +222,7 @@ export async function sendPreferencesEmail(
     await logEmail(guestId, eventId, "preferences", "sent");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[Mailer] Failed to send preferences email:", message);
+    logger.error(`[Mailer] Failed to send preferences email: ${message}`);
     await logEmail(guestId, eventId, "preferences", "failed", message);
     throw err;
   }

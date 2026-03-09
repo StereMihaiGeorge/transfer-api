@@ -3,6 +3,9 @@ import jwt from "jsonwebtoken";
 import { pool } from "../config/db";
 import { ENV } from "../config/env";
 import { UserPublic } from "../models/user";
+import { AppError } from "../middleware/errorHandler";
+import { sendPasswordResetEmail } from "../emails/emailService";
+import logger from "../config/logger";
 
 const SALT_ROUNDS = 10;
 
@@ -119,4 +122,48 @@ export const logoutUser = async (refreshToken: string): Promise<void> => {
       return;
     }
   }
+};
+
+export const forgotPassword = async (email: string): Promise<void> => {
+  const result = await pool.query<{ id: number }>("SELECT id FROM users WHERE email = $1", [email]);
+  if (result.rows.length === 0) return; // silent — prevents user enumeration
+
+  const userId = result.rows[0].id;
+
+  // Only one active reset token at a time
+  await pool.query("DELETE FROM password_reset_tokens WHERE user_id = $1", [userId]);
+
+  const tokenResult = await pool.query<{ token: string }>(
+    `INSERT INTO password_reset_tokens (user_id, expires_at)
+     VALUES ($1, NOW() + INTERVAL '1 hour')
+     RETURNING token`,
+    [userId]
+  );
+  const token = tokenResult.rows[0].token;
+
+  sendPasswordResetEmail(userId, token).catch((err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error(`[Auth] Failed to send password reset email: ${message}`);
+  });
+};
+
+export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+  const result = await pool.query<{ user_id: number }>(
+    `SELECT prt.user_id
+     FROM password_reset_tokens prt
+     WHERE prt.token = $1 AND prt.expires_at > NOW()`,
+    [token]
+  );
+
+  if (result.rows.length === 0) {
+    throw new AppError("Invalid or expired reset token", 400);
+  }
+
+  const { user_id } = result.rows[0];
+
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  await pool.query("UPDATE users SET password = $1 WHERE id = $2", [hashedPassword, user_id]);
+
+  await pool.query("DELETE FROM password_reset_tokens WHERE token = $1", [token]);
+  await pool.query("DELETE FROM refresh_tokens WHERE user_id = $1", [user_id]);
 };

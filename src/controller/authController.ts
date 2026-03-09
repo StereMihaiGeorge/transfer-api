@@ -1,5 +1,13 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser, refreshAccessToken, logoutUser } from "../services/authService";
+import {
+  registerUser,
+  loginUser,
+  refreshAccessToken,
+  logoutUser,
+  forgotPassword,
+  resetPassword,
+} from "../services/authService";
+import { AppError } from "../middleware/errorHandler";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { username, email, password } = req.body;
@@ -56,5 +64,23 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error occurred";
     res.status(500).json({ error: message });
+  }
+};
+
+export const forgotPasswordController = async (req: Request, res: Response): Promise<void> => {
+  await forgotPassword(req.body.email);
+  res.status(200).json({ message: "If this email exists you will receive a reset link shortly" });
+};
+
+export const resetPasswordController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    await resetPassword(req.body.token, req.body.password);
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ error: error.message });
+      return;
+    }
+    res.status(500).json({ error: "Unexpected error occurred" });
   }
 };

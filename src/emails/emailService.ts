@@ -7,6 +7,7 @@ import { rsvpConfirmationTemplate } from "./templates/rsvpConfirmation";
 import { rsvpNotificationTemplate } from "./templates/rsvpNotification";
 import { reminderTemplate } from "./templates/reminder";
 import { preferencesTemplate } from "./templates/preferences";
+import { passwordResetTemplate } from "./templates/passwordReset";
 import { Guest } from "../models/guests";
 import { Event } from "../models/event";
 import { getEventById } from "../services/eventService";
@@ -226,4 +227,19 @@ export async function sendPreferencesEmail(
     await logEmail(guestId, eventId, "preferences", "failed", message);
     throw err;
   }
+}
+
+export async function sendPasswordResetEmail(userId: number, token: string): Promise<void> {
+  const result = await pool.query<{ email: string; username: string }>(
+    "SELECT email, username FROM users WHERE id = $1",
+    [userId]
+  );
+  const user = result.rows[0];
+  if (!user) throw new Error(`User ${userId} not found`);
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  const { subject, html } = passwordResetTemplate({ username: user.username, resetUrl });
+
+  const transporter = await getTransporter();
+  await sendMail(transporter, { from: getFromAddress(), to: user.email, subject, html });
 }

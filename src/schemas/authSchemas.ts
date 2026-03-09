@@ -29,3 +29,16 @@ export const logoutSchema = z.object({
     .string({ error: "Refresh token is required" })
     .min(1, "Refresh token is required"),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().check(z.email("Invalid email format")),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().check(z.uuid("Invalid reset token")),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .check(z.regex(/[A-Z]/, "Password must contain at least one uppercase letter"))
+    .check(z.regex(/\d/, "Password must contain at least one number")),
+});

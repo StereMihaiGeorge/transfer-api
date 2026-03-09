@@ -18,6 +18,7 @@ const migrate = async () => {
       DROP TABLE IF EXISTS baptism_details CASCADE;
       DROP TABLE IF EXISTS wedding_details CASCADE;
       DROP TABLE IF EXISTS events CASCADE;
+      DROP TABLE IF EXISTS password_reset_tokens CASCADE;
       DROP TABLE IF EXISTS refresh_tokens CASCADE;
       DROP TABLE IF EXISTS users CASCADE;
     `);
@@ -36,6 +37,18 @@ const migrate = async () => {
       );
     `);
     console.log("✅ Table 'users' created");
+
+    // Password reset tokens
+    await client.query(`
+      CREATE TABLE password_reset_tokens (
+        id         SERIAL PRIMARY KEY,
+        user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token      UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log("✅ Table 'password_reset_tokens' created");
 
     // Refresh tokens
     await client.query(`
@@ -202,6 +215,7 @@ const migrate = async () => {
 
     // Indexes
     await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
       CREATE INDEX IF NOT EXISTS idx_events_user_id         ON events(user_id);
       CREATE INDEX IF NOT EXISTS idx_events_type            ON events(type);
       CREATE INDEX IF NOT EXISTS idx_guests_event_id        ON guests(event_id);

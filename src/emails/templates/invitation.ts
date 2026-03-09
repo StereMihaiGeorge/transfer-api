@@ -1,19 +1,62 @@
+import { Event } from "../../models/event";
+
 export interface InvitationTemplateData {
   guestName: string;
-  brideName: string;
-  groomName: string;
+  event: Event;
   date: string;
-  venue: string;
-  city: string;
-  coverMessage: string | null;
   rsvpUrl: string;
+}
+
+function buildHeader(event: Event): string {
+  if (event.type === "wedding") {
+    return `
+      <p style="margin:0 0 8px;color:#c9a96e;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Together with their families</p>
+      <h1 style="margin:0;color:#ffffff;font-size:32px;font-weight:400;letter-spacing:2px;">${event.details.bride_name} &amp; ${event.details.groom_name}</h1>
+      <p style="margin:16px 0 0;color:#c9a96e;font-size:13px;letter-spacing:3px;text-transform:uppercase;">request the honour of your presence</p>`;
+  }
+
+  if (event.type === "baptism") {
+    return `
+      <p style="margin:0 0 8px;color:#c9a96e;font-size:13px;letter-spacing:3px;text-transform:uppercase;">We are blessed to announce</p>
+      <h1 style="margin:0;color:#ffffff;font-size:32px;font-weight:400;letter-spacing:2px;">the baptism of ${event.details.child_name}</h1>`;
+  }
+
+  // birthday
+  const ageLabel = event.details.age ? `${event.details.age}th ` : "";
+  return `
+    <p style="margin:0 0 8px;color:#c9a96e;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Join us to celebrate</p>
+    <h1 style="margin:0;color:#ffffff;font-size:32px;font-weight:400;letter-spacing:2px;">${event.details.person_name}'s ${ageLabel}birthday</h1>`;
+}
+
+function buildSubject(event: Event): string {
+  if (event.type === "wedding") {
+    return `You're Invited — ${event.details.bride_name} & ${event.details.groom_name}'s Wedding`;
+  }
+  if (event.type === "baptism") {
+    return `You're Invited — Baptism of ${event.details.child_name}`;
+  }
+  const ageLabel = event.details.age ? ` ${event.details.age}th` : "";
+  return `You're Invited — ${event.details.person_name}'s${ageLabel} Birthday`;
+}
+
+function buildDefaultMessage(event: Event): string {
+  if (event.type === "wedding") {
+    return "We joyfully invite you to celebrate our wedding day with us.";
+  }
+  if (event.type === "baptism") {
+    return `We joyfully invite you to celebrate the baptism of ${event.details.child_name}.`;
+  }
+  const ageLabel = event.details.age ? ` ${event.details.age}th` : "";
+  return `We joyfully invite you to celebrate ${event.details.person_name}'s${ageLabel} birthday.`;
 }
 
 export function invitationTemplate(data: InvitationTemplateData): {
   subject: string;
   html: string;
 } {
-  const subject = `You're Invited — ${data.brideName} & ${data.groomName}'s Wedding`;
+  const subject = buildSubject(data.event);
+  const header = buildHeader(data.event);
+  const defaultMessage = buildDefaultMessage(data.event);
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -31,9 +74,7 @@ export function invitationTemplate(data: InvitationTemplateData): {
           <!-- Header -->
           <tr>
             <td style="background-color:#2c2c2c;padding:48px 40px;text-align:center;">
-              <p style="margin:0 0 8px;color:#c9a96e;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Together with their families</p>
-              <h1 style="margin:0;color:#ffffff;font-size:32px;font-weight:400;letter-spacing:2px;">${data.brideName} &amp; ${data.groomName}</h1>
-              <p style="margin:16px 0 0;color:#c9a96e;font-size:13px;letter-spacing:3px;text-transform:uppercase;">request the honour of your presence</p>
+              ${header}
             </td>
           </tr>
 
@@ -42,9 +83,9 @@ export function invitationTemplate(data: InvitationTemplateData): {
             <td style="padding:48px 40px;text-align:center;">
               <p style="margin:0 0 8px;color:#555;font-size:15px;">Dear <strong style="color:#2c2c2c;">${data.guestName}</strong>,</p>
               ${
-                data.coverMessage
-                  ? `<p style="margin:24px 0;color:#555;font-size:15px;line-height:1.7;">${data.coverMessage}</p>`
-                  : `<p style="margin:24px 0;color:#555;font-size:15px;line-height:1.7;">We joyfully invite you to celebrate our wedding day with us.</p>`
+                data.event.cover_message
+                  ? `<p style="margin:24px 0;color:#555;font-size:15px;line-height:1.7;">${data.event.cover_message}</p>`
+                  : `<p style="margin:24px 0;color:#555;font-size:15px;line-height:1.7;">${defaultMessage}</p>`
               }
 
               <!-- Event details -->
@@ -58,8 +99,8 @@ export function invitationTemplate(data: InvitationTemplateData): {
                 <tr>
                   <td style="padding:8px 0;text-align:center;">
                     <p style="margin:0 0 4px;color:#c9a96e;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Venue</p>
-                    <p style="margin:0;color:#2c2c2c;font-size:17px;">${data.venue}</p>
-                    <p style="margin:4px 0 0;color:#777;font-size:14px;">${data.city}</p>
+                    <p style="margin:0;color:#2c2c2c;font-size:17px;">${data.event.venue}</p>
+                    <p style="margin:4px 0 0;color:#777;font-size:14px;">${data.event.city}</p>
                   </td>
                 </tr>
               </table>
@@ -78,7 +119,7 @@ export function invitationTemplate(data: InvitationTemplateData): {
           <!-- Footer -->
           <tr>
             <td style="background-color:#f9f5f0;padding:24px 40px;text-align:center;border-top:1px solid #e8e0d5;">
-              <p style="margin:0;color:#aaa;font-size:12px;">With love, ${data.brideName} &amp; ${data.groomName}</p>
+              <p style="margin:0;color:#aaa;font-size:12px;">${data.event.title}</p>
             </td>
           </tr>
 

@@ -38,18 +38,63 @@ const options: swaggerJsdoc.Options = {
             plan: { type: "string", enum: ["free", "basic", "premium"] },
           },
         },
-        Event: {
+        BaseEvent: {
           type: "object",
           properties: {
             id: { type: "integer" },
-            bride_name: { type: "string" },
-            groom_name: { type: "string" },
+            user_id: { type: "integer" },
+            type: { type: "string", enum: ["wedding", "baptism", "birthday"] },
+            title: { type: "string" },
             date: { type: "string", format: "date" },
             venue: { type: "string" },
             city: { type: "string" },
             slug: { type: "string" },
             cover_message: { type: "string" },
           },
+        },
+        WeddingDetails: {
+          type: "object",
+          properties: {
+            bride_name: { type: "string" },
+            groom_name: { type: "string" },
+          },
+        },
+        BaptismDetails: {
+          type: "object",
+          properties: {
+            child_name: { type: "string" },
+            child_date_of_birth: { type: "string", format: "date" },
+            parent_name: { type: "string" },
+            godfather_name: { type: "string" },
+            godmother_name: { type: "string" },
+            church_name: { type: "string" },
+          },
+        },
+        BirthdayDetails: {
+          type: "object",
+          properties: {
+            person_name: { type: "string" },
+            age: { type: "integer" },
+            theme: { type: "string" },
+            dress_code: { type: "string" },
+          },
+        },
+        Event: {
+          allOf: [
+            { $ref: "#/components/schemas/BaseEvent" },
+            {
+              type: "object",
+              properties: {
+                details: {
+                  oneOf: [
+                    { $ref: "#/components/schemas/WeddingDetails" },
+                    { $ref: "#/components/schemas/BaptismDetails" },
+                    { $ref: "#/components/schemas/BirthdayDetails" },
+                  ],
+                },
+              },
+            },
+          ],
         },
         Guest: {
           type: "object",

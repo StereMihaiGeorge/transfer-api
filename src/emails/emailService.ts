@@ -8,6 +8,7 @@ import { reminderTemplate } from "./templates/reminder";
 import { preferencesTemplate } from "./templates/preferences";
 import { Guest } from "../models/guests";
 import { Event } from "../models/event";
+import { getEventById } from "../services/eventService";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -15,18 +16,28 @@ async function fetchGuestAndEvent(
   guestId: number,
   eventId: number
 ): Promise<{ guest: Guest; event: Event }> {
-  const [guestResult, eventResult] = await Promise.all([
+  const [guestResult, event] = await Promise.all([
     pool.query<Guest>("SELECT * FROM guests WHERE id = $1", [guestId]),
-    pool.query<Event>("SELECT * FROM events WHERE id = $1", [eventId]),
+    getEventById(eventId),
   ]);
 
   const guest = guestResult.rows[0];
-  const event = eventResult.rows[0];
-
   if (!guest) throw new Error(`Guest ${guestId} not found`);
   if (!event) throw new Error(`Event ${eventId} not found`);
 
   return { guest, event };
+}
+
+/** Returns human-readable host names for any event type, used by templates. */
+function getEventDisplayNames(event: Event): { brideName: string; groomName: string } {
+  if (event.type === "wedding") {
+    return { brideName: event.details.bride_name, groomName: event.details.groom_name };
+  }
+  if (event.type === "baptism") {
+    return { brideName: event.details.child_name, groomName: event.details.parent_name };
+  }
+  // birthday
+  return { brideName: event.details.person_name, groomName: "" };
 }
 
 async function logEmail(
@@ -78,12 +89,8 @@ export async function sendInvitationEmail(
   const rsvpUrl = `${process.env.FRONTEND_URL}/rsvp/${token}`;
   const { subject, html } = invitationTemplate({
     guestName: guest.name,
-    brideName: event.bride_name,
-    groomName: event.groom_name,
+    event,
     date: formatDate(event.date),
-    venue: event.venue,
-    city: event.city,
-    coverMessage: event.cover_message,
     rsvpUrl,
   });
 
@@ -106,10 +113,11 @@ export async function sendRsvpConfirmationEmail(guestId: number, eventId: number
 
   if (!guest.email) throw new Error("Guest has no email");
 
+  const { brideName, groomName } = getEventDisplayNames(event);
   const { subject, html } = rsvpConfirmationTemplate({
     guestName: guest.name,
-    brideName: event.bride_name,
-    groomName: event.groom_name,
+    brideName,
+    groomName,
     date: formatDate(event.date),
     venue: event.venue,
     status: guest.status as "confirmed" | "declined",
@@ -138,12 +146,13 @@ export async function sendRsvpNotificationEmail(guestId: number, eventId: number
   const couple = coupleResult.rows[0];
   if (!couple) throw new Error(`User ${event.user_id} not found`);
 
+  const { brideName, groomName } = getEventDisplayNames(event);
   const { subject, html } = rsvpNotificationTemplate({
     guestName: guest.name,
     status: guest.status as "confirmed" | "declined",
     memberCount: guest.member_count,
-    brideName: event.bride_name,
-    groomName: event.groom_name,
+    brideName,
+    groomName,
   });
 
   try {
@@ -165,10 +174,11 @@ export async function sendReminderEmail(guestId: number, eventId: number): Promi
   if (guest.status !== "pending") throw new Error("Guest has already responded");
 
   const rsvpUrl = `${process.env.FRONTEND_URL}/rsvp/${guest.token}`;
+  const { brideName, groomName } = getEventDisplayNames(event);
   const { subject, html } = reminderTemplate({
     guestName: guest.name,
-    brideName: event.bride_name,
-    groomName: event.groom_name,
+    brideName,
+    groomName,
     date: formatDate(event.date),
     venue: event.venue,
     rsvpUrl,
@@ -197,10 +207,11 @@ export async function sendPreferencesEmail(
   if (guest.status !== "confirmed") throw new Error("Guest has not confirmed attendance");
 
   const preferencesUrl = `${process.env.FRONTEND_URL}/rsvp/${token}/preferences`;
+  const { brideName, groomName } = getEventDisplayNames(event);
   const { subject, html } = preferencesTemplate({
     guestName: guest.name,
-    brideName: event.bride_name,
-    groomName: event.groom_name,
+    brideName,
+    groomName,
     preferencesUrl,
   });
 

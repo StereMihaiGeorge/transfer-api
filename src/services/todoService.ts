@@ -1,7 +1,8 @@
 import { pool } from "../config/db";
 import { Todo, CreateTodoInput } from "../models/todo";
+import { EventType } from "../models/event";
 
-const DEFAULT_TODOS = [
+const WEDDING_TODOS = [
   { title: "Book the venue", category: "venue" },
   { title: "Hire photographer", category: "photography" },
   { title: "Choose wedding cake", category: "catering" },
@@ -14,13 +15,45 @@ const DEFAULT_TODOS = [
   { title: "Book transport", category: "transport" },
 ];
 
-export const seedDefaultTodos = async (eventId: number): Promise<void> => {
-  for (const todo of DEFAULT_TODOS) {
-    await pool.query(
-      `INSERT INTO todos (event_id, title, category)
-       VALUES ($1, $2, $3)`,
-      [eventId, todo.title, todo.category]
-    );
+const BAPTISM_TODOS = [
+  { title: "Book church", category: "venue" },
+  { title: "Book restaurant", category: "venue" },
+  { title: "Order baptism cake", category: "catering" },
+  { title: "Choose godparents gifts", category: "other" },
+  { title: "Hire photographer", category: "photography" },
+  { title: "Order baptism outfit", category: "clothing" },
+  { title: "Send invitations", category: "other" },
+  { title: "Book flowers", category: "flowers" },
+  { title: "Arrange seating plan", category: "other" },
+  { title: "Book transport", category: "transport" },
+];
+
+const BIRTHDAY_TODOS = [
+  { title: "Book venue", category: "venue" },
+  { title: "Order birthday cake", category: "catering" },
+  { title: "Book DJ/band", category: "music" },
+  { title: "Send invitations", category: "other" },
+  { title: "Hire photographer", category: "photography" },
+  { title: "Choose outfit", category: "clothing" },
+  { title: "Arrange decorations", category: "decoration" },
+  { title: "Plan entertainment", category: "other" },
+  { title: "Book transport", category: "transport" },
+  { title: "Arrange seating plan", category: "other" },
+];
+
+const TODO_LISTS: Record<EventType, { title: string; category: string }[]> = {
+  wedding: WEDDING_TODOS,
+  baptism: BAPTISM_TODOS,
+  birthday: BIRTHDAY_TODOS,
+};
+
+export const seedDefaultTodos = async (eventId: number, type: EventType): Promise<void> => {
+  for (const todo of TODO_LISTS[type]) {
+    await pool.query(`INSERT INTO todos (event_id, title, category) VALUES ($1, $2, $3)`, [
+      eventId,
+      todo.title,
+      todo.category,
+    ]);
   }
 };
 
@@ -38,7 +71,7 @@ export const getTodosByEventId = async (eventId: number): Promise<Todo[]> => {
   const result = await pool.query<Todo>(
     `SELECT * FROM todos
      WHERE event_id = $1
-     ORDER BY 
+     ORDER BY
        CASE status
          WHEN 'in_progress' THEN 1
          WHEN 'pending' THEN 2

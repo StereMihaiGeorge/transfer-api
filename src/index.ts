@@ -38,7 +38,7 @@ app.use(
 // Rate limiting for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // max 10 requests per 15 minutes
+  max: 50, // max 10 requests per 15 minutes
   message: { error: "Too many attempts, please try again later" },
   standardHeaders: true,
   legacyHeaders: false,
@@ -47,7 +47,7 @@ const authLimiter = rateLimit({
 // General rate limiting for all routes
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // max 100 requests per 15 minutes
+  max: 200, // max 100 requests per 15 minutes
   message: { error: "Too many requests, please try again later" },
   standardHeaders: true,
   legacyHeaders: false,

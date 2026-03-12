@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import * as Sentry from "@sentry/node";
 
 export class AppError extends Error {
   statusCode: number;
@@ -26,7 +25,6 @@ export const errorHandler = (
   }
 
   // Unexpected error (bug, DB crash etc)
-  Sentry.captureException(err);
   res.status(500).json({
     error: "Internal server error",
   });

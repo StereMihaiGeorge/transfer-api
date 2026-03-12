@@ -1,5 +1,3 @@
-import "./instrument";
-import * as Sentry from "@sentry/node";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -119,7 +117,6 @@ app.use("/api/v1/events/:id/todos", todoRoutes);
 app.use("/api/v1/events/:id/songs", songRoutes);
 app.use("/api/v1/rsvp", rsvpRoutes);
 
-Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
 app.listen(PORT, () => {

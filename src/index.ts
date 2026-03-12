@@ -26,7 +26,11 @@ app.use(helmet());
 // CORS — only allow your frontend domain
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:5173",
+      "http://127.0.0.1:5500",
+      "http://localhost:5500",
+    ],
     credentials: true,
   })
 );
@@ -120,6 +124,6 @@ app.use("/api/v1/rsvp", rsvpRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  logger.info(`🚀 Server running on http://localhost:${PORT}`);
-  logger.info(`📚 Swagger docs: http://localhost:${PORT}/api/docs`);
+  logger.info(`Server running on http://localhost:${PORT}`);
+  logger.info(`Swagger docs: http://localhost:${PORT}/api/docs`);
 });

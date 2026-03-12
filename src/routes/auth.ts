@@ -6,8 +6,10 @@ import {
   logout,
   forgotPasswordController,
   resetPasswordController,
+  getMeController,
 } from "../controller/authController";
 import { validate } from "../middleware/validate";
+import { authenticate } from "../middleware/authenticate";
 import {
   registerSchema,
   loginSchema,
@@ -241,5 +243,36 @@ router.post("/forgot-password", validate(forgotPasswordSchema), forgotPasswordCo
  *               $ref: '#/components/schemas/Error'
  */
 router.post("/reset-password", validate(resetPasswordSchema), resetPasswordController);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current user profile and events
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile with events list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/BaseEvent'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/me", authenticate, getMeController);
 
 export default router;

@@ -6,7 +6,9 @@ import {
   logoutUser,
   forgotPassword,
   resetPassword,
+  getMe,
 } from "../services/authService";
+import { AuthRequest } from "../middleware/authenticate";
 import { AppError } from "../middleware/errorHandler";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -82,5 +84,15 @@ export const resetPasswordController = async (req: Request, res: Response): Prom
       return;
     }
     res.status(500).json({ error: "Unexpected error occurred" });
+  }
+};
+
+export const getMeController = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const data = await getMe(req.user!.id);
+    res.status(200).json(data);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected error occurred";
+    res.status(400).json({ error: message });
   }
 };

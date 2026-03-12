@@ -147,6 +147,71 @@ export const forgotPassword = async (email: string): Promise<void> => {
   });
 };
 
+export const getMe = async (
+  userId: number
+): Promise<{
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    plan: string;
+    language: string;
+    created_at: string;
+  };
+  events: unknown[];
+}> => {
+  const userResult = await pool.query(
+    "SELECT id, username, email, plan, language, created_at FROM users WHERE id = $1",
+    [userId]
+  );
+
+  if (userResult.rows.length === 0) {
+    throw new AppError("User not found", 404);
+  }
+
+  const eventsResult = await pool.query(
+    `SELECT
+       e.id, e.type, e.title, e.date,
+       e.venue, e.city, e.slug, e.created_at,
+       wd.bride_name, wd.groom_name,
+       bd.child_name, bd.parent_name,
+       bdd.person_name, bdd.age
+     FROM events e
+     LEFT JOIN wedding_details wd ON wd.event_id = e.id
+     LEFT JOIN baptism_details bd ON bd.event_id = e.id
+     LEFT JOIN birthday_details bdd ON bdd.event_id = e.id
+     WHERE e.user_id = $1
+     ORDER BY e.created_at DESC`,
+    [userId]
+  );
+
+  const events = eventsResult.rows.map((row) => {
+    let details: Record<string, unknown> = {};
+
+    if (row.type === "wedding") {
+      details = { bride_name: row.bride_name, groom_name: row.groom_name };
+    } else if (row.type === "baptism") {
+      details = { child_name: row.child_name, parent_name: row.parent_name };
+    } else if (row.type === "birthday") {
+      details = { person_name: row.person_name, age: row.age };
+    }
+
+    return {
+      id: row.id,
+      type: row.type,
+      title: row.title,
+      date: row.date,
+      venue: row.venue,
+      city: row.city,
+      slug: row.slug,
+      created_at: row.created_at,
+      details,
+    };
+  });
+
+  return { user: userResult.rows[0], events };
+};
+
 export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
   const result = await pool.query<{ user_id: number }>(
     `SELECT prt.user_id
